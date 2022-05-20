@@ -5,6 +5,7 @@ import {
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
   ParseIntPipe,
   Post,
@@ -34,6 +35,7 @@ import { Results as UploadedResultsModel } from '../dto/result.request.dto';
 import { ResultsService } from './results.service';
 import { UploadResult, UploadResults } from './results.status';
 import { Result as ResultDto } from '../dto/result.response.dto';
+import dayjs from 'dayjs';
 
 @Controller('results')
 @ApiExtraModels(PaginatedDto)
@@ -61,13 +63,22 @@ export class ResultsController {
   ): Promise<PaginatedDto<ResultDto>> {
     const request: Prisma.ResultFindManyArgs = {
       where: {
+        goldenIkuraNum: {
+          gte: query.golden_ikura_num,
+        },
+        ikuraNum: {
+          gte: query.ikura_num,
+        },
+        noNightWaves: {
+          equals: query.no_night_waves,
+        },
         jobResult: {
           isClear: {
             equals: query.is_clear,
           },
         },
       },
-      select: {
+      include: {
         players: true,
         waves: true,
         jobResult: true,
@@ -79,15 +90,48 @@ export class ResultsController {
     return this.service.findMany(request);
   }
 
-  @Get('schedules/:schedule_id')
-  @ApiParam({ name: 'schedule_id', type: 'integer', description: 'シフトID' })
+  @Get('schedules/:start_time')
   @ApiTags('リザルト一覧')
   @ApiOperation({ operationId: 'スケジュール指定' })
   @ApiNotFoundResponse()
-  findManyByScheduleId(
-    @Query() query: PaginatedRequestDtoForResult
-  ): Promise<ResultModel[]> {
-    return;
+  async findManyByScheduleId(
+    @Param('start_time', ParseIntPipe) start_time: number,
+    @Query(new ValidationPipe({ transform: true }))
+    query: PaginatedRequestDtoForResult
+  ): Promise<PaginatedDto<ResultDto>> {
+    await this.service.validate(start_time);
+    const request: Prisma.ResultFindManyArgs = {
+      where: {
+        goldenIkuraNum: {
+          gte: query.golden_ikura_num,
+        },
+        ikuraNum: {
+          gte: query.ikura_num,
+        },
+        noNightWaves: {
+          equals: query.no_night_waves,
+        },
+        jobResult: {
+          isClear: {
+            equals: query.is_clear,
+          },
+        },
+        schedule: {
+          startTime: {
+            equals: dayjs.unix(start_time).toDate(),
+          },
+        },
+      },
+      include: {
+        players: true,
+        waves: true,
+        jobResult: true,
+        schedule: true,
+      },
+      skip: query.offset,
+      take: query.limit,
+    };
+    return this.service.findMany(request);
   }
 
   @Get('users/:nsaid')
@@ -96,18 +140,34 @@ export class ResultsController {
   @ApiNotFoundResponse()
   findManyByUser(
     @Param('nsaid') nsaid: string,
-    @Query(new ValidationPipe({ transform: true })) query: PaginatedRequestDto
+    @Query(new ValidationPipe({ transform: true }))
+    query: PaginatedRequestDtoForResult
   ): Promise<PaginatedDto<ResultDto>> {
     const request: Prisma.ResultFindManyArgs = {
       where: {
+        goldenIkuraNum: {
+          gte: query.golden_ikura_num,
+        },
+        ikuraNum: {
+          gte: query.ikura_num,
+        },
+        noNightWaves: {
+          equals: query.no_night_waves,
+        },
         members: {
           has: nsaid,
+        },
+        jobResult: {
+          isClear: {
+            equals: query.is_clear,
+          },
         },
       },
       include: {
         players: true,
         waves: true,
         jobResult: true,
+        schedule: true,
       },
       skip: query.offset,
       take: query.limit,
@@ -120,7 +180,6 @@ export class ResultsController {
   @ApiOperation({ operationId: '登録' })
   @ApiOkResponse()
   @ApiBadRequestResponse()
-  // @ApiBody({ type: UploadedResultsModel })
   create(
     @Body(new ValidationPipe({ transform: true }))
     request: UploadedResultsModel

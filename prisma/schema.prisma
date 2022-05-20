@@ -56,7 +56,7 @@ model JobResult {
 // }
 
 model Schedule {
-  startTime  DateTime @map("start_time")
+  startTime  DateTime @id @map("start_time")
   stageId    Int      @map("stage_id")
   endTime    DateTime @map("end_time")
   rareWeapon Int?     @map("rare_weapon")

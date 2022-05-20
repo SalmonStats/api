@@ -4,10 +4,9 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
-import { Prisma, Result as ResultModel } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
 import {
-  BossCounts,
   EventType,
   PlayerResult,
   Result as UploadedResultModel,
@@ -17,10 +16,7 @@ import {
 } from '../dto/result.request.dto';
 import dayjs from 'dayjs';
 import { Status, UploadResult, UploadResults } from './results.status';
-import {
-  PaginatedDto,
-  PaginatedRequestDtoForResult,
-} from '../dto/pagination.dto';
+import { PaginatedDto } from '../dto/pagination.dto';
 import { plainToClass } from 'class-transformer';
 import { Result as ResultDto } from '../dto/result.response.dto';
 const { transpose } = require('matrix-transpose');
@@ -29,13 +25,6 @@ const snakecaseKeys = require('snakecase-keys');
 @Injectable()
 export class ResultsService {
   constructor(private readonly prisma: PrismaService) {}
-
-  convertToJSON(result: ResultModel): ResultDto {
-    return plainToClass(ResultDto, snakecaseKeys, {
-      excludeExtraneousValues: true,
-      exposeUnsetFields: false,
-    });
-  }
 
   async find(salmonId: number): Promise<ResultDto> {
     try {
@@ -85,6 +74,19 @@ export class ResultsService {
   // 同じリザルトを別の人がアップロードしたときにバイトデータをアップデートする
   // 基本的には同じはずだが、回線落ちしたときなどの対策
   async updateWaveResult() {}
+
+  async validate(start_time: number): Promise<void> {
+    try {
+      await this.prisma.schedule.findUnique({
+        where: {
+          startTime: dayjs.unix(start_time).toDate(),
+        },
+        rejectOnNotFound: true,
+      });
+    } catch {
+      throw new NotFoundException();
+    }
+  }
 
   // 重複しているリザルトIDを返す
   // 新規リザルトであればnullを返す

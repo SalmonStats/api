@@ -61,6 +61,22 @@ export class PaginatedRequestDtoForResult extends PaginatedRequestDto {
   @IsBoolean()
   readonly is_clear?: boolean;
 
+  @ApiPropertyOptional({
+    title: '',
+    default: false,
+    description: '夜イベントを含まないかどうか',
+  })
+  @Expose()
+  @Transform((params) => {
+    if (params.value === undefined) {
+      return undefined;
+    }
+    return params.value === 'true';
+  })
+  @IsOptional()
+  @IsBoolean()
+  readonly no_night_waves?: boolean;
+
   @ApiPropertyOptional()
   @Expose()
   @Transform((params) => {

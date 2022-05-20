@@ -31,18 +31,23 @@ export class Wave implements WaveResult {
   @Expose()
   @ApiProperty()
   event_type: number;
+
   @Expose()
   @ApiProperty()
   water_level: number;
+
   @Expose()
   @ApiProperty()
   golden_ikura_num: number;
+
   @Expose()
   @ApiProperty()
   golden_ikura_pop_num: number;
+
   @Expose()
   @ApiProperty()
   quota_num: number;
+
   @Expose()
   @ApiProperty()
   ikura_num: number;
@@ -104,18 +109,23 @@ export class Player implements PlayerResultType {
 }
 
 export class Schedule {
+  @Expose()
   @ApiProperty()
   start_time: number;
 
+  @Expose()
   @ApiProperty()
   stage_id: number;
 
+  @Expose()
   @ApiProperty()
   end_time: number;
 
+  @Expose()
   @ApiProperty()
   rare_weapon: number;
 
+  @Expose()
   @ApiProperty()
   weapon_list: number[];
 }
