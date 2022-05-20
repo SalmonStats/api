@@ -10,13 +10,13 @@ export enum SpecialType {}
 
 export enum BossType {}
 
-export enum StageType {
-  SHKAUP = 5000,
-  SHAKESHIP = 5001,
-  SHAKEHOUSE = 5002,
-  SHAKELIFT = 5003,
-  SHAKELIDE = 5004,
-}
+// export enum StageType {
+//   SHKAUP = 5000,
+//   SHAKESHIP = 5001,
+//   SHAKEHOUSE = 5002,
+//   SHAKELIFT = 5003,
+//   SHAKELIDE = 5004,
+// }
 
 export interface WaveResult {
   event_type: number;
@@ -108,7 +108,7 @@ export class Schedule {
   start_time: number;
 
   @ApiProperty()
-  stage_id: StageType;
+  stage_id: number;
 
   @ApiProperty()
   end_time: number;

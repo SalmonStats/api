@@ -12,6 +12,7 @@ import {
   PlayerResult,
   Result as UploadedResultModel,
   Results as UploadedResultsModel,
+  StageType,
   WaterLevel,
 } from '../dto/result.request.dto';
 import dayjs from 'dayjs';
@@ -21,7 +22,7 @@ import {
   PaginatedRequestDtoForResult,
 } from '../dto/pagination.dto';
 import { plainToClass } from 'class-transformer';
-import { Result as ResultDto, StageType } from '../dto/result.response.dto';
+import { Result as ResultDto } from '../dto/result.response.dto';
 const { transpose } = require('matrix-transpose');
 const snakecaseKeys = require('snakecase-keys');
 
@@ -63,6 +64,9 @@ export class ResultsService {
   ): Promise<PaginatedDto<ResultDto>> {
     const response = new PaginatedDto<ResultDto>();
     const results = this.prisma.result.findMany(request);
+    response.total = await this.prisma.result.count({
+      where: request.where,
+    });
     response.limit = request.take;
     response.offset = request.skip;
     response.results = (await results).map((result) =>
@@ -155,7 +159,6 @@ export class ResultsService {
         dangerRate: result.danger_rate,
         endTime: result.end_time,
         playTime: result.play_time,
-        startTime: result.start_time,
         jobResult: {
           create: {
             failureReason: result.job_result.failure_reason,
