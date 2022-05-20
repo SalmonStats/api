@@ -144,7 +144,10 @@ export class ResultsService {
         schedule: {
           connectOrCreate: {
             where: {
-              startTime: result.start_time,
+              startTime_endTime: {
+                startTime: result.start_time,
+                endTime: result.end_time,
+              },
             },
             create: {
               stageId:
@@ -157,7 +160,6 @@ export class ResultsService {
           },
         },
         dangerRate: result.danger_rate,
-        endTime: result.end_time,
         playTime: result.play_time,
         jobResult: {
           create: {

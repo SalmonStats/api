@@ -59,7 +59,6 @@ export class ResultsController {
     @Query(new ValidationPipe({ transform: true }))
     query: PaginatedRequestDtoForResult
   ): Promise<PaginatedDto<ResultDto>> {
-    console.log(query.is_clear, typeof query.is_clear);
     const request: Prisma.ResultFindManyArgs = {
       where: {
         jobResult: {
@@ -72,6 +71,7 @@ export class ResultsController {
         players: true,
         waves: true,
         jobResult: true,
+        schedule: true,
       },
       skip: query.offset,
       take: query.limit,

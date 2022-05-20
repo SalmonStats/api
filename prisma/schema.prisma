@@ -19,18 +19,19 @@ model Result {
   noNightWaves   Boolean    @map("no_night_waves")
   ikuraNum       Int        @map("ikura_num")
   dangerRate     Float      @map("danger_rate")
-  endTime        DateTime   @map("end_time")
-  playTime       DateTime   @map("play_time")
   startTime      DateTime   @map("start_time")
+  playTime       DateTime   @map("play_time")
+  endTime        DateTime   @map("end_time")
   members        String[]
   players        Player[]
   waves          Wave[]
   jobResult      JobResult?
-  schedule       Schedule?  @relation(fields: [startTime], references: [startTime])
+  schedule       Schedule?  @relation(fields: [startTime, endTime], references: [startTime, endTime])
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt()
 
   @@unique([playTime, members])
+  @@index([goldenIkuraNum, ikuraNum, members])
   @@map("results")
 }
 
@@ -55,13 +56,14 @@ model JobResult {
 // }
 
 model Schedule {
-  startTime  DateTime @id @map("start_time")
+  startTime  DateTime @map("start_time")
   stageId    Int      @map("stage_id")
   endTime    DateTime @map("end_time")
   rareWeapon Int?     @map("rare_weapon")
   weaponList Int[]    @map("weapon_list")
   results    Result[]
 
+  @@unique([startTime, endTime])
   @@map("schedules")
 }
 
@@ -108,6 +110,7 @@ model Wave {
   resultId          Int
 
   @@unique([resultId, waveId])
+  @@index([eventType, waterLevel, goldenIkuraNum, ikuraNum])
   @@map("waves")
 }
 
