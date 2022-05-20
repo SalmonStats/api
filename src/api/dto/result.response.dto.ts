@@ -149,6 +149,18 @@ export class Result {
 
   @Expose()
   @ApiProperty()
+  golden_ikura_num: number;
+
+  @Expose()
+  @ApiProperty()
+  ikura_num: number;
+
+  @Expose()
+  @ApiProperty()
+  no_night_waves: boolean;
+
+  @Expose()
+  @ApiProperty()
   danger_rate: number;
 
   @Expose()

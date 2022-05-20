@@ -54,7 +54,6 @@ export class ResultsService {
         exposeUnsetFields: false,
       });
     } catch (error) {
-      console.log(error);
       throw new NotFoundException();
     }
   }
