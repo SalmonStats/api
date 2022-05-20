@@ -210,15 +210,6 @@ class Weapon {
   @Transform((param) => parseInt(param.value, 10))
   @ApiProperty()
   id: number;
-
-  @ApiProperty()
-  image: string;
-
-  @ApiProperty()
-  name: string;
-
-  @ApiProperty()
-  thumbnail: string;
 }
 
 class WeaponList {
@@ -305,6 +296,11 @@ class Schedule {
   @ValidateNested()
   @Type(() => EnumImageType)
   stage: EnumImageType<StageType>;
+
+  @ApiProperty()
+  @ValidateNested()
+  @Type(() => WeaponList)
+  weapons: WeaponList[];
 }
 
 class WaveResult {

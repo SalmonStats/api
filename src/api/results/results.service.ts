@@ -21,7 +21,7 @@ import {
   PaginatedRequestDtoForResult,
 } from '../dto/pagination.dto';
 import { plainToClass } from 'class-transformer';
-import { Result as ResultDto } from '../dto/result.response.dto';
+import { Result as ResultDto, StageType } from '../dto/result.response.dto';
 const { transpose } = require('matrix-transpose');
 const snakecaseKeys = require('snakecase-keys');
 
@@ -137,6 +137,21 @@ export class ResultsService {
         noNightWaves: result.wave_details.every(
           (wave) => Object.values(EventType).indexOf(wave.event_type.key) == 0
         ),
+        schedule: {
+          connectOrCreate: {
+            where: {
+              startTime: result.start_time,
+            },
+            create: {
+              stageId:
+                Object.values(StageType).indexOf(result.schedule.stage.image) +
+                5000,
+              startTime: result.start_time,
+              endTime: result.end_time,
+              weaponList: result.schedule.weapons.map((weapon) => weapon.id),
+            },
+          },
+        },
         dangerRate: result.danger_rate,
         endTime: result.end_time,
         playTime: result.play_time,
