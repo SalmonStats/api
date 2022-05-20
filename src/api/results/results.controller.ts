@@ -99,7 +99,6 @@ export class ResultsController {
     @Query(new ValidationPipe({ transform: true }))
     query: PaginatedRequestDtoForResult
   ): Promise<PaginatedDto<ResultDto>> {
-    await this.service.validate(start_time);
     const request: Prisma.ResultFindManyArgs = {
       where: {
         goldenIkuraNum: {

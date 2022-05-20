@@ -67,27 +67,6 @@ export class ResultsService {
     return response;
   }
 
-  // 同じリザルトを別の人がアップロードしたときにプレイヤーデータを更新する
-  // 基本的には同じはずだが、回線落ちしたときなどの対策
-  async updatePlayerResult() {}
-
-  // 同じリザルトを別の人がアップロードしたときにバイトデータをアップデートする
-  // 基本的には同じはずだが、回線落ちしたときなどの対策
-  async updateWaveResult() {}
-
-  async validate(start_time: number): Promise<void> {
-    try {
-      await this.prisma.schedule.findUnique({
-        where: {
-          startTime: dayjs.unix(start_time).toDate(),
-        },
-        rejectOnNotFound: true,
-      });
-    } catch {
-      throw new NotFoundException();
-    }
-  }
-
   // 重複しているリザルトIDを返す
   // 新規リザルトであればnullを返す
   async getResultSalmonId(result: UploadedResultModel): Promise<number> {
