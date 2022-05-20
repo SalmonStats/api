@@ -129,6 +129,15 @@ export class ResultsService {
       data: {
         bossCounts: boss_counts,
         bossKillCounts: boss_kill_counts,
+        goldenIkuraNum: result.wave_details
+          .map((wave) => wave.golden_ikura_num)
+          .reduce((prev, next) => prev + next, 0),
+        ikuraNum: result.wave_details
+          .map((wave) => wave.ikura_num)
+          .reduce((prev, next) => prev + next, 0),
+        noNightWaves: result.wave_details.every(
+          (wave) => Object.values(EventType).indexOf(wave.event_type.key) == 0
+        ),
         dangerRate: result.danger_rate,
         endTime: result.end_time,
         playTime: result.play_time,
