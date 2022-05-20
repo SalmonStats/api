@@ -18,6 +18,7 @@ import {
   IsInt,
   IsOptional,
   IsString,
+  Min,
 } from 'class-validator';
 
 export class PaginatedRequestDto {
@@ -61,9 +62,30 @@ export class PaginatedRequestDtoForResult extends PaginatedRequestDto {
   readonly is_clear?: boolean;
 
   @ApiPropertyOptional()
+  @Expose()
+  @Transform((params) => {
+    if (params.value === undefined) {
+      return undefined;
+    }
+    return parseInt(params.value, 10);
+  })
   @IsOptional()
-  @IsString()
-  readonly nsaid?: string;
+  @IsInt()
+  @Min(0)
+  readonly golden_ikura_num?: number;
+
+  @ApiPropertyOptional()
+  @Expose()
+  @Transform((params) => {
+    if (params.value === undefined) {
+      return undefined;
+    }
+    return parseInt(params.value, 10);
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  readonly ikura_num?: number;
 }
 
 export class PaginatedDto<T> {

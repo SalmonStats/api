@@ -67,9 +67,6 @@ export class ResultsController {
             equals: query.is_clear,
           },
         },
-        members: {
-          has: query.nsaid,
-        },
       },
       select: {
         players: true,
