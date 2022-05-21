@@ -16,6 +16,7 @@ import {
 } from '@nestjs/swagger';
 import { Prisma } from '@prisma/client';
 import dayjs from 'dayjs';
+import { find } from 'rxjs';
 import { runInThisContext } from 'vm';
 import { StatsResult } from '../dto/stats.response.dto';
 import { SchedulesService } from './schedules.service';
@@ -37,6 +38,9 @@ export class SchedulesController {
         startTime: dayjs.unix(start_time).toDate(),
       },
     };
+
+    const data = await this.service.findManyAggreataion();
+    console.log(data);
     const results = await this.service.findManyResults(request);
     console.log(results.length);
     return results;
