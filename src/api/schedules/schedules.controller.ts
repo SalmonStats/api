@@ -1,22 +1,46 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Query,
+} from '@nestjs/common';
 import {
   ApiNotFoundResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import { Prisma } from '@prisma/client';
+import dayjs from 'dayjs';
+import { runInThisContext } from 'vm';
+import { StatsResult } from '../dto/stats.response.dto';
 import { SchedulesService } from './schedules.service';
 
 @Controller('schedules')
 export class SchedulesController {
   constructor(private readonly service: SchedulesService) {}
 
-  @Get(':schedule_id/stats')
-  @ApiParam({ name: 'schedule_id', type: 'integer', description: 'シフトID' })
+  @Get(':start_time/stats')
   @ApiTags('スケジュール')
-  @ApiOperation({ operationId: '統計取得' })
+  @ApiOperation({ operationId: '取得' })
+  @ApiOkResponse({
+    type: StatsResult,
+  })
   @ApiNotFoundResponse()
-  findStats() {}
+  async findStat(@Param('start_time', ParseIntPipe) start_time: number) {
+    const request: Prisma.ScheduleFindUniqueArgs = {
+      where: {
+        startTime: dayjs.unix(start_time).toDate(),
+      },
+    };
+    const results = await this.service.findManyResults(request);
+    console.log(results.length);
+    return results;
+  }
 
   @Get('')
   @ApiTags('スケジュール')
