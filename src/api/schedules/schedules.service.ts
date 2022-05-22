@@ -1,7 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, Result } from '@prisma/client';
+import { plainToClass } from 'class-transformer';
 import dayjs from 'dayjs';
+import snakecaseKeys from 'snakecase-keys';
 import { PrismaService } from 'src/prisma.service';
+import { IkuraStats } from '../dto/stats.response.dto';
 
 import { schedules } from './coop.json';
 export type CoopSchedule = typeof import('./coop.json');
@@ -27,16 +30,36 @@ export class SchedulesService {
     }
   }
 
-  async findManyAggreataion() {
+  async statsBossCounts(start_time: number) {
+    const stats = await this.prisma.player.aggregate({
+      where: {
+        result: {
+          startTime: dayjs.unix(start_time).toDate(),
+        },
+      },
+      _avg: {
+        helpCount: true,
+        deadCount: true,
+        ikuraNum: true,
+        goldenIkuraNum: true,
+      },
+    });
+    console.log(stats);
+  }
+
+  async statsWaves(start_time: number): Promise<IkuraStats[]> {
     const waves = await this.prisma.wave.groupBy({
       by: ['eventType', 'waterLevel'],
       where: {
         isClear: true,
         result: {
           schedule: {
-            startTime: dayjs.unix(1648836000).toDate(),
+            startTime: dayjs.unix(start_time).toDate(),
           },
         },
+      },
+      _count: {
+        _all: true,
       },
       _avg: {
         goldenIkuraNum: true,
@@ -51,15 +74,25 @@ export class SchedulesService {
         ikuraNum: true,
       },
     });
-    console.log(waves);
-    const results = this.prisma.result.groupBy({
+    const stats = waves.map((wave) => {
+      const data = snakecaseKeys(wave);
+      return plainToClass(IkuraStats, data);
+    });
+    return stats;
+  }
+
+  async statsResults(start_time: number) {
+    const results = await this.prisma.result.groupBy({
       by: ['noNightWaves'],
       where: {
-        startTime: dayjs.unix(1648836000).toDate(),
+        startTime: dayjs.unix(start_time).toDate(),
         jobResult: {
           isClear: true,
         },
       },
+      _count: {
+        _all: true,
+      },
       _avg: {
         goldenIkuraNum: true,
         ikuraNum: true,
@@ -73,7 +106,11 @@ export class SchedulesService {
         ikuraNum: true,
       },
     });
-    return results;
+    console.log(results);
+    return results.map((result) => {
+      const data = snakecaseKeys(result);
+      return plainToClass(IkuraStats, data);
+    });
   }
 
   async find(): Promise<void> {}

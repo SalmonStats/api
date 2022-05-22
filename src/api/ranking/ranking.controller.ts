@@ -16,7 +16,6 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { StatsResult } from '../dto/stats.response.dto';
 
 @Controller('ranking')
 export class RankingController {

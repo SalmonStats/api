@@ -1,66 +1,86 @@
-import { ApiProduces, ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Expose, Transform, Type } from 'class-transformer';
 
-class JobWaveResult {
-  @ApiProperty()
-  clear: number;
-
-  @ApiProperty()
-  time_limit: number;
-
-  @ApiProperty()
-  wipe_out: number;
-}
-
-class Statistics {
-  @ApiProperty()
+class Stat {
   max: number;
-
-  @ApiProperty()
+  min: number;
   avg: number;
-
-  @ApiProperty()
-  var: number;
-
-  @ApiProperty()
-  sd: number;
 }
 
-class Stats {
+class IkuraStat {
   @ApiProperty()
-  job_num: number;
+  @Transform((params) => Number(parseFloat(params.value).toFixed(3)))
+  golden_ikura_num: number;
 
-  @ApiProperty({ type: [JobWaveResult] })
-  job_results: JobWaveResult[];
+  @ApiProperty()
+  @Transform((params) => Number(parseFloat(params.value).toFixed(3)))
+  ikura_num: number;
 
-  @ApiProperty({ type: Statistics })
-  golden_ikura_num: Statistics;
+  @ApiProperty()
+  @Transform((params) => Number(parseFloat(params.value).toFixed(3)))
+  dead_count: number;
 
-  @ApiProperty({ type: Statistics })
-  ikura_num: Statistics;
-
-  @ApiProperty({ type: Statistics })
-  help_count: Statistics;
-
-  @ApiProperty({ type: Statistics })
-  dead_count: Statistics;
-
-  @ApiProperty({ type: [Statistics] })
-  boss_counts: Statistics[];
-
-  @ApiProperty({ type: [Statistics] })
-  boss_kill_counts: Statistics[];
-
-  @ApiProperty({ type: [Number] })
-  total_boss_counts: number[];
-
-  @ApiProperty({ type: [Number] })
-  total_boss_kill_counts: number[];
+  @ApiProperty()
+  @Transform((params) => Number(parseFloat(params.value).toFixed(3)))
+  help_count: number;
 }
 
-export class StatsResult {
-  @ApiProperty({ type: Stats })
-  my_result: Stats;
+export class IkuraStats {
+  @ApiProperty()
+  @Type(() => IkuraStat)
+  max: IkuraStat;
 
-  @ApiProperty({ type: Stats })
-  other_result: Stats;
+  @ApiProperty()
+  @Type(() => IkuraStat)
+  min: IkuraStat;
+
+  @ApiProperty()
+  @Type(() => IkuraStat)
+  avg: IkuraStat;
+
+  @ApiProperty()
+  @Transform((params) => params.value['all'])
+  count: number;
+}
+
+class SingleResultDto {
+  // 全員の記録
+  @ApiProperty()
+  global: IkuraStats;
+
+  // 自チームの平均記録
+  @ApiProperty()
+  team: IkuraStats;
+
+  // 自分の記録
+  @ApiPropertyOptional()
+  player?: IkuraStats;
+
+  // マッチングした仲間の記録
+  @ApiPropertyOptional()
+  crew?: IkuraStats;
+}
+
+class TotalResultDto {
+  // 全員の記録
+  @ApiProperty()
+  global: IkuraStats[];
+
+  // 自チームの平均記録
+  @ApiProperty()
+  player?: IkuraStats[];
+}
+
+export class StatsResultsDto {
+  @ApiProperty()
+  @Type(() => TotalResultDto)
+  waves: TotalResultDto;
+
+  @ApiProperty()
+  @Type(() => TotalResultDto)
+  total: TotalResultDto;
+
+  @ApiProperty()
+  @Type(() => SingleResultDto)
+  single: SingleResultDto;
 }
