@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import {
   ApiNotFoundResponse,
@@ -16,13 +17,20 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { RankingService } from './ranking.service';
 
-@Controller('ranking')
+@Controller('rank')
 export class RankingController {
-  @Get('schedules/:schedule_id')
-  @ApiParam({ name: 'schedule_id', type: 'integer', description: 'シフトID' })
+  constructor(private readonly service: RankingService) {}
+
+  @Get('')
   @ApiTags('ランキング')
   @ApiOperation({ operationId: '取得' })
   @ApiNotFoundResponse()
-  findAll() {}
+  findAll(
+    @Query('nsaid') nsaid: string,
+    @Query('start_time', ParseIntPipe) start_time: number
+  ) {
+    return this.service.rank(start_time, nsaid);
+  }
 }

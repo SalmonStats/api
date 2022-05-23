@@ -35,7 +35,7 @@ export class StatsController {
   ) {
     const response = new StatsResultsModel();
     response.single = {
-      global: await this.service.single(start_time, null),
+      global: await this.service.single(start_time, is_clear, null),
       team: await this.service.single(
         start_time,
         is_clear,
