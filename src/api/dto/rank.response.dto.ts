@@ -1,40 +1,100 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 
-class Ikura {
+class Rank {
   @ApiProperty()
-  @Transform((params) => Number(parseFloat(params.value).toFixed(3)))
+  rank: number;
+
+  @ApiProperty()
+  score: number;
+}
+
+export class RankIkura {
+  @ApiProperty()
+  @Type(() => Rank)
+  golden_ikura_num: Rank;
+
+  @ApiProperty()
+  @Type(() => Rank)
+  ikura_num: Rank;
+}
+
+export class RankWaveIkura {
+  @ApiProperty()
   golden_ikura_num: number;
 
   @ApiProperty()
-  @Transform((params) => Number(parseFloat(params.value).toFixed(3)))
   ikura_num: number;
 }
 
-export class RankResponseDto {
+export class RankBoss {
   @ApiProperty()
-  @Type(() => Ikura)
-  max: Ikura;
+  boss_counts: number[];
 
   @ApiProperty()
-  @Type(() => Ikura)
-  min: Ikura;
+  boss_kill_counts: number[];
 
   @ApiProperty()
-  @Type(() => Ikura)
-  avg: Ikura;
+  golden_ikura_num: number;
 
   @ApiProperty()
-  @Transform((params) => params.value['all'])
+  ikura_num: number;
+}
+
+export class RankWave {
+  @ApiProperty()
+  @Type(() => RankWaveIkura)
+  max: RankWaveIkura;
+
+  @ApiProperty()
+  @Type(() => RankWaveIkura)
+  min: RankWaveIkura;
+
+  @ApiProperty()
+  @Type(() => RankWaveIkura)
+  avg: RankWaveIkura;
+
+  @ApiProperty()
+  @Type(() => RankWaveIkura)
   count: number;
 }
 
-// export class RankResultDto {
-//   @ApiProperty()
-//   @Type(() => RankDto)
-//   total: RankDto[];
+export class UserRankWave {
+  waves: {
+    normal: {
+      'water-levels': RankIkura;
+      rush: RankIkura;
+      'goldie-seeking': RankIkura;
+      griller: RankIkura;
+      'the-mothership': RankIkura;
+      fog: RankIkura;
+    };
+    high: {
+      'water-levels': RankIkura;
+      rush: RankIkura;
+      'goldie-seeking': RankIkura;
+      griller: RankIkura;
+      'the-mothership': RankIkura;
+      fog: RankIkura;
+    };
+    low: {
+      'water-levels': RankIkura;
+      'the-mothership': RankIkura;
+      fog: RankIkura;
+      'cohock-charge': RankIkura;
+    };
+  };
+}
 
-//   @ApiProperty()
-//   @Type(() => RankDto)
-//   waves: RankDto[];
+// export class UserRankTotal {
+//   all: RankIkura;
+//   no_night_waves: RankIkura;
 // }
+
+export class UserRank {
+  total: {
+    all: RankIkura;
+    no_night_waves: RankIkura;
+  };
+  waves: UserRankWave;
+}
