@@ -6,6 +6,8 @@ import { response } from 'express';
 import snakecaseKeys from 'snakecase-keys';
 import { PrismaService } from 'src/prisma.service';
 import {
+  GlobalRank,
+  Rank,
   RankBoss,
   RankIkura,
   RankWave,
@@ -33,6 +35,11 @@ enum EventType {
 export class RankingService {
   constructor(private readonly prisma: PrismaService) {}
 
+  /**
+   * 個人のWAVE記録を配列で返す
+   * @param arg スケジュールID
+   * @return WAVE記録の配列
+   */
   async aggregate(
     start_time: number,
     nsaid?: string,
@@ -76,28 +83,12 @@ export class RankingService {
     return plainToClass(RankWave, snakecaseKeys(result));
   }
 
-  async ikura(start_time: number): Promise<RankBoss[]> {
-    const startTime: Date = dayjs.unix(start_time).toDate();
-    const results = await this.prisma.result.findMany({
-      where: {
-        startTime: startTime,
-      },
-      select: {
-        bossCounts: true,
-        bossKillCounts: true,
-        goldenIkuraNum: true,
-        ikuraNum: true,
-      },
-    });
-    return results.map((result) => {
-      return plainToClass(RankBoss, result);
-    });
-  }
-
   /**
-   * 個人のWAVE記録を配列で返す
-   * @param arg スケジュールID
-   * @return WAVE記録の配列
+   * 個人のWAVE記録
+   * @param start_time スケジュールID
+   * @param nsaid プレイヤーID
+   * @param data グローバルのWAVE記録
+   * @return UserRankWave
    */
   async wave(
     start_time: number,
@@ -144,9 +135,9 @@ export class RankingService {
   }
 
   /**
-   * 全員のWAVE記録を配列で返す
-   * @param arg スケジュールID
-   * @return WAVE記録の配列
+   * グローバルのWAVE記録
+   * @param start_time スケジュールID
+   * @return UserRankWave
    */
   async waves(start_time: number): Promise<UserRankWave> {
     const startTime: Date = dayjs.unix(start_time).toDate();
@@ -179,7 +170,14 @@ export class RankingService {
     return plainToClass(UserRankWave, response);
   }
 
-  async total(
+  /**
+   * 指定されたユーザの総合ランク
+   * @param start_time スケジュールID
+   * @param nsaid プレイヤーID
+   * @param no_night 夜WAVEを含むか
+   * @return RankIkura
+   */
+  async ikura(
     start_time: number,
     nsaid: string,
     no_night?: boolean
@@ -193,8 +191,8 @@ export class RankingService {
       },
     });
 
-    // 配列を取得
-    const results = await this.ikura(start_time);
+    // グローバルを取得
+    const results = await this.ikuras(start_time);
     const golden_ikura_num = results
       .map((result) => result.golden_ikura_num)
       .sort((x, y) => y - x);
@@ -217,6 +215,36 @@ export class RankingService {
     return plainToClass(RankIkura, response);
   }
 
+  /**
+   * グローバルの総合記録を配列で返す
+   * @param start_time スケジュールID
+   * @return RankBoss[]
+   */
+  async ikuras(start_time: number): Promise<RankBoss[]> {
+    const startTime: Date = dayjs.unix(start_time).toDate();
+    const results = await this.prisma.result.findMany({
+      where: {
+        startTime: startTime,
+      },
+      select: {
+        bossCounts: true,
+        bossKillCounts: true,
+        goldenIkuraNum: true,
+        ikuraNum: true,
+      },
+    });
+
+    return results.map((result) => {
+      return plainToClass(RankBoss, snakecaseKeys(result));
+    });
+  }
+
+  /**
+   * 指定されたユーザのランク
+   * @param start_time スケジュールID
+   * @param nsaid プレイヤーID
+   * @return UserRank
+   */
   async rank(start_time: number, nsaid: string): Promise<UserRank> {
     if (nsaid === undefined) {
       throw new BadRequestException();
@@ -230,10 +258,89 @@ export class RankingService {
 
     const response: UserRank = {
       total: {
-        all: await this.total(start_time, nsaid, true),
-        no_night_waves: await this.total(start_time, nsaid, false),
+        all: await this.ikura(start_time, nsaid, true),
+        no_night_waves: await this.ikura(start_time, nsaid, false),
       },
       waves: waves,
+    };
+    return response;
+  }
+
+  /**
+   * 指定されたスケジュールのランク
+   * @param start_time スケジュールID
+   * @return GlobalRank
+   */
+  async global(start_time: number): Promise<GlobalRank> {
+    const startTime = dayjs.unix(start_time).toDate();
+    const goldenIkuraRank = await Promise.all(
+      [true, false].map(async (no_night) => {
+        const results = await this.prisma.result.findMany({
+          where: {
+            startTime: startTime,
+            noNightWaves: no_night,
+          },
+          select: {
+            salmonId: true,
+            goldenIkuraNum: true,
+            ikuraNum: true,
+            members: true,
+          },
+          distinct: ['members'],
+          orderBy: {
+            goldenIkuraNum: 'desc',
+          },
+          take: 10,
+        });
+
+        return results.map((result, index) => {
+          const data: Rank = plainToClass(Rank, snakecaseKeys(result));
+          data.rank = index + 1;
+          return data;
+        });
+      })
+    );
+
+    const ikuraRank = await Promise.all(
+      [true, false].map(async (no_night) => {
+        const results = await this.prisma.result.findMany({
+          where: {
+            startTime: startTime,
+            noNightWaves: no_night,
+          },
+          select: {
+            salmonId: true,
+            goldenIkuraNum: true,
+            ikuraNum: true,
+            members: true,
+          },
+          distinct: ['members'],
+          orderBy: {
+            ikuraNum: 'desc',
+          },
+          take: 10,
+        });
+
+        return results.map((result, index) => {
+          const data: Rank = plainToClass(Rank, snakecaseKeys(result));
+          data.rank = index + 1;
+          return data;
+        });
+      })
+    );
+
+    const response: GlobalRank = {
+      total: {
+        all: {
+          golden_ikura_num: goldenIkuraRank[0],
+          ikura_num: ikuraRank[0],
+        },
+        no_night_waves: {
+          golden_ikura_num: goldenIkuraRank[1],
+          ikura_num: ikuraRank[1],
+        },
+      },
+      waves: null,
     };
     return response;
   }

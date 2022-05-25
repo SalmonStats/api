@@ -1,27 +1,15 @@
-import {
-  Controller,
-  Delete,
-  Get,
-  HttpStatus,
-  Param,
-  ParseIntPipe,
-  Post,
-  Put,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
 import {
   ApiNotFoundResponse,
-  ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiQuery,
-  ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { UserRank } from '../dto/rank.response.dto';
+import { GlobalRank, UserRank } from '../dto/rank.response.dto';
 import { RankingService } from './ranking.service';
 
-@Controller('rank')
+@Controller('ranks')
 export class RankingController {
   constructor(private readonly service: RankingService) {}
 
@@ -36,5 +24,16 @@ export class RankingController {
     @Query('start_time', ParseIntPipe) start_time: number
   ): Promise<UserRank> {
     return this.service.rank(start_time, nsaid);
+  }
+
+  @Get(':start_time')
+  @ApiTags('ランキング')
+  @ApiOperation({ operationId: '概要取得' })
+  @ApiParam({ name: 'start_time', required: true, type: Number })
+  @ApiNotFoundResponse()
+  find(
+    @Param('start_time', ParseIntPipe) start_time: number
+  ): Promise<GlobalRank> {
+    return this.service.global(start_time);
   }
 }

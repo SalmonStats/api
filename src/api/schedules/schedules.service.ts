@@ -44,7 +44,6 @@ export class SchedulesService {
         goldenIkuraNum: true,
       },
     });
-    console.log(stats);
   }
 
   async statsWaves(start_time: number): Promise<IkuraStats[]> {
@@ -106,7 +105,7 @@ export class SchedulesService {
         ikuraNum: true,
       },
     });
-    console.log(results);
+
     return results.map((result) => {
       const data = snakecaseKeys(result);
       return plainToClass(IkuraStats, data);

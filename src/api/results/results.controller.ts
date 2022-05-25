@@ -42,6 +42,11 @@ import dayjs from 'dayjs';
 export class ResultsController {
   constructor(private readonly service: ResultsService) {}
 
+  /**
+   * 指定されたリザルトID
+   * @param salmon_id リザルトID
+   * @return ResultDto
+   */
   @Get(':salmon_id')
   @UseInterceptors(ClassSerializerInterceptor)
   @ApiParam({ name: 'salmon_id', type: 'integer', description: 'リザルトID' })
@@ -52,6 +57,10 @@ export class ResultsController {
     return this.service.find(salmonId);
   }
 
+  /**
+   * 指定されたリザルトID
+   * @return ResultDto
+   */
   @Get('')
   @ApiTags('リザルト')
   @UseInterceptors(ClassSerializerInterceptor)
@@ -61,113 +70,42 @@ export class ResultsController {
     @Query(new ValidationPipe({ transform: true }))
     query: PaginatedRequestDtoForResult
   ): Promise<PaginatedDto<ResultDto>> {
+    const filter: Prisma.ResultWhereInput = (() => {
+      if (query.nsaid === undefined) {
+        return {
+          goldenIkuraNum: {
+            gte: query.golden_ikura_num,
+          },
+          ikuraNum: {
+            gte: query.ikura_num,
+          },
+          noNightWaves: query.no_night_waves,
+          jobResult: {
+            isClear: query.is_clear,
+          },
+          startTime: query.start_time,
+        };
+      } else {
+        return {
+          goldenIkuraNum: {
+            gte: query.golden_ikura_num,
+          },
+          ikuraNum: {
+            gte: query.ikura_num,
+          },
+          noNightWaves: query.no_night_waves,
+          jobResult: {
+            isClear: query.is_clear,
+          },
+          startTime: query.start_time,
+          members: {
+            has: query.nsaid,
+          },
+        };
+      }
+    })();
     const request: Prisma.ResultFindManyArgs = {
-      where: {
-        goldenIkuraNum: {
-          gte: query.golden_ikura_num,
-        },
-        ikuraNum: {
-          gte: query.ikura_num,
-        },
-        noNightWaves: {
-          equals: query.no_night_waves,
-        },
-        jobResult: {
-          isClear: {
-            equals: query.is_clear,
-          },
-        },
-      },
-      include: {
-        players: true,
-        waves: true,
-        jobResult: true,
-        schedule: true,
-      },
-      skip: query.offset,
-      take: query.limit,
-    };
-    return this.service.findMany(request);
-  }
-
-  @Get('schedules/:start_time')
-  @ApiTags('リザルト一覧')
-  @ApiOperation({ operationId: 'スケジュール指定' })
-  @ApiNotFoundResponse()
-  async findManyByScheduleId(
-    @Param('start_time', ParseIntPipe) start_time: number,
-    @Query(new ValidationPipe({ transform: true }))
-    query: PaginatedRequestDtoForResult
-  ): Promise<PaginatedDto<ResultDto>> {
-    const request: Prisma.ResultFindManyArgs = {
-      where: {
-        goldenIkuraNum: {
-          gte: query.golden_ikura_num,
-        },
-        ikuraNum: {
-          gte: query.ikura_num,
-        },
-        noNightWaves: {
-          equals: query.no_night_waves,
-        },
-        jobResult: {
-          isClear: {
-            equals: query.is_clear,
-          },
-        },
-        schedule: {
-          startTime: {
-            equals: dayjs.unix(start_time).toDate(),
-          },
-        },
-      },
-      include: {
-        players: true,
-        waves: true,
-        jobResult: true,
-        schedule: true,
-      },
-      skip: query.offset,
-      take: query.limit,
-    };
-    return this.service.findMany(request);
-  }
-
-  @Get('users/:nsaid')
-  @ApiTags('リザルト一覧')
-  @ApiOperation({ operationId: 'プレイヤー指定' })
-  @ApiNotFoundResponse()
-  findManyByUser(
-    @Param('nsaid') nsaid: string,
-    @Query(new ValidationPipe({ transform: true }))
-    query: PaginatedRequestDtoForResult
-  ): Promise<PaginatedDto<ResultDto>> {
-    const request: Prisma.ResultFindManyArgs = {
-      where: {
-        goldenIkuraNum: {
-          gte: query.golden_ikura_num,
-        },
-        ikuraNum: {
-          gte: query.ikura_num,
-        },
-        noNightWaves: {
-          equals: query.no_night_waves,
-        },
-        members: {
-          has: nsaid,
-        },
-        jobResult: {
-          isClear: {
-            equals: query.is_clear,
-          },
-        },
-      },
-      include: {
-        players: true,
-        waves: true,
-        jobResult: true,
-        schedule: true,
-      },
+      where: filter,
       skip: query.offset,
       take: query.limit,
     };

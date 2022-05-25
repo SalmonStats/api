@@ -1,12 +1,21 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 
-class Rank {
+export class Rank {
+  @ApiPropertyOptional()
+  salmon_id: number;
+
   @ApiProperty()
   rank: number;
 
   @ApiProperty()
-  score: number;
+  golden_ikura_num: number;
+
+  @ApiProperty()
+  ikura_num: number;
+
+  @ApiPropertyOptional()
+  members: string[];
 }
 
 export class RankIkura {
@@ -17,6 +26,16 @@ export class RankIkura {
   @ApiProperty()
   @Type(() => Rank)
   ikura_num: Rank;
+}
+
+export class GlobalRankIkura {
+  @ApiProperty()
+  @Type(() => Rank)
+  golden_ikura_num: Rank[];
+
+  @ApiProperty()
+  @Type(() => Rank)
+  ikura_num: Rank[];
 }
 
 export class RankWaveIkura {
@@ -86,10 +105,32 @@ export class UserRankWave {
   };
 }
 
-// export class UserRankTotal {
-//   all: RankIkura;
-//   no_night_waves: RankIkura;
-// }
+export class GlobalRankWave {
+  waves: {
+    normal: {
+      'water-levels': GlobalRankIkura;
+      rush: GlobalRankIkura;
+      'goldie-seeking': GlobalRankIkura;
+      griller: GlobalRankIkura;
+      'the-mothership': GlobalRankIkura;
+      fog: GlobalRankIkura;
+    };
+    high: {
+      'water-levels': GlobalRankIkura;
+      rush: GlobalRankIkura;
+      'goldie-seeking': GlobalRankIkura;
+      griller: GlobalRankIkura;
+      'the-mothership': GlobalRankIkura;
+      fog: GlobalRankIkura;
+    };
+    low: {
+      'water-levels': GlobalRankIkura;
+      'the-mothership': GlobalRankIkura;
+      fog: GlobalRankIkura;
+      'cohock-charge': GlobalRankIkura;
+    };
+  };
+}
 
 export class UserRank {
   total: {
@@ -97,4 +138,12 @@ export class UserRank {
     no_night_waves: RankIkura;
   };
   waves: UserRankWave;
+}
+
+export class GlobalRank {
+  total: {
+    all: GlobalRankIkura;
+    no_night_waves: GlobalRankIkura;
+  };
+  waves: GlobalRankWave;
 }

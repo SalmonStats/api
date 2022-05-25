@@ -15,11 +15,13 @@ import { Expose, Transform } from 'class-transformer';
 import {
   IsBoolean,
   IsBooleanString,
+  IsDate,
   IsInt,
   IsOptional,
   IsString,
   Min,
 } from 'class-validator';
+import dayjs from 'dayjs';
 
 export class PaginatedRequestDto {
   @Expose()
@@ -47,7 +49,36 @@ export class PaginatedRequestDto {
 export class PaginatedRequestDtoForResult extends PaginatedRequestDto {
   @ApiPropertyOptional({
     title: '',
-    default: false,
+    description: 'プレイヤーID',
+  })
+  @Expose()
+  @Transform((params) => {
+    if (params.value === undefined) {
+      return undefined;
+    }
+    return dayjs.unix(params.value).toDate();
+  })
+  @IsOptional()
+  @IsDate()
+  readonly start_time?: Date;
+
+  @ApiPropertyOptional({
+    title: '',
+    description: 'プレイヤーID',
+  })
+  @Expose()
+  @Transform((params) => {
+    if (params.value === undefined) {
+      return undefined;
+    }
+    return params.value;
+  })
+  @IsOptional()
+  @IsString()
+  readonly nsaid?: string;
+
+  @ApiPropertyOptional({
+    title: '',
     description: 'クリアしたリザルトのみ',
   })
   @Expose()
@@ -63,7 +94,6 @@ export class PaginatedRequestDtoForResult extends PaginatedRequestDto {
 
   @ApiPropertyOptional({
     title: '',
-    default: false,
     description: '夜イベントを含まないかどうか',
   })
   @Expose()
@@ -77,7 +107,10 @@ export class PaginatedRequestDtoForResult extends PaginatedRequestDto {
   @IsBoolean()
   readonly no_night_waves?: boolean;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({
+    title: '',
+    description: '最小納品金イクラ数',
+  })
   @Expose()
   @Transform((params) => {
     if (params.value === undefined) {
@@ -90,7 +123,10 @@ export class PaginatedRequestDtoForResult extends PaginatedRequestDto {
   @Min(0)
   readonly golden_ikura_num?: number;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({
+    title: '',
+    description: '最小取得赤イクラ数',
+  })
   @Expose()
   @Transform((params) => {
     if (params.value === undefined) {
