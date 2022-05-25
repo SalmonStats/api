@@ -7,6 +7,8 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { query } from 'express';
+import { PaginatedRequestDto } from '../dto/pagination.dto';
 import { ParseOptionalUnsignedIntPipe } from '../validation/parse-optional-unsigned-int.pipe';
 import { UsersService } from './users.service';
 
@@ -18,13 +20,8 @@ export class UsersController {
   @ApiTags('ユーザー')
   @ApiOperation({ operationId: '一覧取得' })
   @ApiOkResponse()
-  findMany(
-    @Query('offset', ParseOptionalUnsignedIntPipe)
-    skip: number,
-    @Query('limit', ParseOptionalUnsignedIntPipe)
-    take?: number
-  ): Promise<UserModel[]> {
-    return this.service.findMany(skip, take);
+  findMany(@Query() query: PaginatedRequestDto): Promise<UserModel[]> {
+    return this.service.findMany(query);
   }
 
   @Get(':user_id')

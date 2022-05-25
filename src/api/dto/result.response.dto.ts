@@ -10,13 +10,13 @@ export enum SpecialType {}
 
 export enum BossType {}
 
-// export enum StageType {
-//   SHKAUP = 5000,
-//   SHAKESHIP = 5001,
-//   SHAKEHOUSE = 5002,
-//   SHAKELIFT = 5003,
-//   SHAKELIDE = 5004,
-// }
+export enum StageType {
+  SHAKEUP = 5000,
+  SHAKESHIP = 5001,
+  SHAKEHOUSE = 5002,
+  SHAKELIFT = 5003,
+  SHAKELIDE = 5004,
+}
 
 export interface WaveResult {
   event_type: number;
@@ -68,15 +68,15 @@ interface PlayerResultType {
 
 export class Player implements PlayerResultType {
   @Expose()
-  @ApiProperty()
+  @ApiProperty({ example: '0000000000000000' })
   nsaid: string;
 
   @Expose()
-  @ApiProperty()
+  @ApiProperty({ example: 'tkgling' })
   name: string;
 
   @Expose()
-  @ApiProperty()
+  @ApiProperty({ type: [Number], example: [0, 0, 0, 0, 0, 0, 0, 0, 0] })
   boss_kill_counts: number[];
 
   @Expose()
@@ -100,47 +100,50 @@ export class Player implements PlayerResultType {
   special_id: number;
 
   @Expose()
-  @ApiProperty()
+  @ApiProperty({ type: [Number] })
   special_counts: number[];
 
   @Expose()
-  @ApiProperty()
+  @ApiProperty({ type: [Number] })
   weapon_list: number[];
 }
 
 export class Schedule {
   @Expose()
   @ApiProperty()
-  start_time: number;
+  start_time: Date;
+
+  @Expose()
+  @ApiProperty({ enum: StageType, example: StageType.SHAKEUP })
+  stage_id: StageType;
 
   @Expose()
   @ApiProperty()
-  stage_id: number;
+  end_time: Date;
 
   @Expose()
-  @ApiProperty()
-  end_time: number;
+  @ApiProperty({ nullable: true, default: null })
+  rare_weapon?: number;
 
   @Expose()
-  @ApiProperty()
-  rare_weapon: number;
-
-  @Expose()
-  @ApiProperty()
+  @ApiProperty({ type: [Number] })
   weapon_list: number[];
 }
 
 export class JobResult {
   @Expose()
-  @ApiProperty()
+  @ApiProperty({ enum: FailureReason, nullable: true, example: null })
   failure_reason: FailureReason;
 
   @Expose()
-  @ApiProperty()
-  failure_wave: number;
+  @ApiProperty({ nullable: true, example: null })
+  failure_wave?: number;
 
   @Expose()
-  @ApiProperty()
+  @ApiProperty({
+    type: Boolean,
+    example: true,
+  })
   is_clear: boolean;
 }
 
@@ -150,11 +153,11 @@ export class Result {
   salmon_id: number;
 
   @Expose()
-  @ApiProperty()
+  @ApiProperty({ type: [Number], example: [0, 0, 0, 0, 0, 0, 0, 0, 0] })
   boss_counts: number[];
 
   @Expose()
-  @ApiProperty()
+  @ApiProperty({ type: [Number], example: [0, 0, 0, 0, 0, 0, 0, 0, 0] })
   boss_kill_counts: number[];
 
   @Expose()
@@ -175,18 +178,26 @@ export class Result {
 
   @Expose()
   @ApiProperty()
-  end_time: number;
+  end_time: Date;
 
   @Expose()
   @ApiProperty()
-  play_time: number;
+  play_time: Date;
 
   @Expose()
   @ApiProperty()
-  start_time: number;
+  start_time: Date;
 
   @Expose()
-  @ApiProperty()
+  @ApiProperty({
+    type: [String],
+    example: [
+      '0000000000000000',
+      '1111111111111111',
+      '2222222222222222',
+      '3333333333333333',
+    ],
+  })
   members: string[];
 
   @Expose()
@@ -196,16 +207,16 @@ export class Result {
 
   @Expose()
   @Type(() => Player)
-  @ApiProperty()
+  @ApiProperty({ type: [Player] })
   players: Player[];
 
   @Expose()
   @Type(() => Wave)
-  @ApiProperty()
+  @ApiProperty({ type: [Wave] })
   waves: Wave[];
 
   @Expose()
   @Type(() => Schedule)
-  @ApiProperty()
+  @ApiProperty({ type: Schedule })
   schedule: Schedule;
 }

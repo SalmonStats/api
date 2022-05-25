@@ -9,11 +9,18 @@ paths:
           required: true
           in: query
           schema:
+            minimum: 0
+            title: offset
+            default: 0
             type: number
         - name: limit
           required: true
           in: query
           schema:
+            minimum: 0
+            maximum: 200
+            title: limit
+            default: 25
             type: number
       responses:
         '200':
@@ -80,6 +87,12 @@ paths:
           schema:
             type: integer
       responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
         '404':
           description: ''
       tags:
@@ -364,140 +377,50 @@ components:
         - total
         - limit
         - offset
-    EnumType:
-      type: object
-      properties:
-        key:
-          type: string
-        name:
-          type: string
-      required:
-        - key
-        - name
-    BossCount:
-      type: object
-      properties:
-        boss:
-          $ref: '#/components/schemas/EnumType'
-        count:
-          type: number
-      required:
-        - boss
-        - count
-    BossCounts:
-      type: object
-      properties:
-        '3':
-          $ref: '#/components/schemas/BossCount'
-        '6':
-          $ref: '#/components/schemas/BossCount'
-        '9':
-          $ref: '#/components/schemas/BossCount'
-        '12':
-          $ref: '#/components/schemas/BossCount'
-        '13':
-          $ref: '#/components/schemas/BossCount'
-        '14':
-          $ref: '#/components/schemas/BossCount'
-        '15':
-          $ref: '#/components/schemas/BossCount'
-        '16':
-          $ref: '#/components/schemas/BossCount'
-        '21':
-          $ref: '#/components/schemas/BossCount'
-      required:
-        - '3'
-        - '6'
-        - '9'
-        - '12'
-        - '13'
-        - '14'
-        - '15'
-        - '16'
-        - '21'
-    Grade:
-      type: object
-      properties:
-        id:
-          type: number
-        long_name:
-          type: string
-        short_name:
-          type: string
-      required:
-        - id
-        - long_name
-        - short_name
     JobResult:
       type: object
       properties:
-        failure_wave:
-          type: number
-          example: 1
         failure_reason:
           type: string
           enum:
             - time_limit
             - wipe_out
-          example: time_limit
+          nullable: true
+          example: null
+        failure_wave:
+          type: number
+          nullable: true
+          example: null
         is_clear:
           type: boolean
-          example: false
+          example: true
       required:
-        - failure_wave
         - failure_reason
+        - failure_wave
         - is_clear
-    PlayerType:
+    Player:
       type: object
       properties:
-        style:
+        nsaid:
           type: string
-          enum:
-            - girl
-            - boy
-        species:
+          example: '0000000000000000'
+        name:
           type: string
-          enum:
-            - inklings
-            - octolings
-      required:
-        - style
-        - species
-    Special:
-      type: object
-      properties:
-        id:
-          type: number
-        image_a:
-          type: string
-        image_b:
-          type: string
-      required:
-        - id
-        - image_a
-        - image_b
-    Weapon:
-      type: object
-      properties:
-        id:
-          type: number
-      required:
-        - id
-    WeaponList:
-      type: object
-      properties:
-        id:
-          type: number
-        weapon:
-          $ref: '#/components/schemas/Weapon'
-      required:
-        - id
-        - weapon
-    PlayerResult:
-      type: object
-      properties:
+          example: tkgling
         boss_kill_counts:
-          $ref: '#/components/schemas/BossCounts'
+          example:
+            - 0
+            - 0
+            - 0
+            - 0
+            - 0
+            - 0
+            - 0
+            - 0
+            - 0
+          type: array
+          items:
+            type: number
         dead_count:
           type: number
         golden_ikura_num:
@@ -506,151 +429,168 @@ components:
           type: number
         ikura_num:
           type: number
-        name:
-          type: string
-        pid:
-          type: string
-        player_type:
-          $ref: '#/components/schemas/PlayerType'
-        special:
-          $ref: '#/components/schemas/Special'
-        weapon_list:
-          type: array
-          items:
-            $ref: '#/components/schemas/WeaponList'
+        special_id:
+          type: number
         special_counts:
           type: array
           items:
-            type: string
+            type: number
+        weapon_list:
+          type: array
+          items:
+            type: number
       required:
+        - nsaid
+        - name
         - boss_kill_counts
         - dead_count
         - golden_ikura_num
         - help_count
         - ikura_num
-        - name
-        - pid
-        - player_type
-        - special
-        - weapon_list
+        - special_id
         - special_counts
-    EnumImageType:
+        - weapon_list
+    Wave:
       type: object
       properties:
-        image:
-          type: object
-        name:
-          type: string
+        event_type:
+          type: number
+        water_level:
+          type: number
+        golden_ikura_num:
+          type: number
+        golden_ikura_pop_num:
+          type: number
+        quota_num:
+          type: number
+        ikura_num:
+          type: number
       required:
-        - image
-        - name
+        - event_type
+        - water_level
+        - golden_ikura_num
+        - golden_ikura_pop_num
+        - quota_num
+        - ikura_num
     Schedule:
       type: object
       properties:
         start_time:
           format: date-time
           type: string
+        stage_id:
+          type: string
+          enum:
+            - SHAKEUP
+            - SHAKESHIP
+            - SHAKEHOUSE
+            - SHAKELIFT
+            - SHAKELIDE
+          example: 5000
         end_time:
           format: date-time
           type: string
-        stage:
-          $ref: '#/components/schemas/EnumImageType'
-        weapons:
+        rare_weapon:
+          type: number
+          nullable: true
+          default: null
+        weapon_list:
           type: array
           items:
-            type: string
+            type: number
       required:
         - start_time
+        - stage_id
         - end_time
-        - stage
-        - weapons
-    WaveResult:
-      type: object
-      properties:
-        water_level:
-          $ref: '#/components/schemas/EnumType'
-        event_type:
-          $ref: '#/components/schemas/EnumType'
-        golden_ikura_num:
-          type: number
-        golden_ikura_pop_num:
-          type: number
-        ikura_num:
-          type: number
-        quota_num:
-          type: number
-      required:
-        - water_level
-        - event_type
-        - golden_ikura_num
-        - golden_ikura_pop_num
-        - ikura_num
-        - quota_num
+        - rare_weapon
+        - weapon_list
     Result:
       type: object
       properties:
+        salmon_id:
+          type: number
         boss_counts:
-          $ref: '#/components/schemas/BossCounts'
+          example:
+            - 0
+            - 0
+            - 0
+            - 0
+            - 0
+            - 0
+            - 0
+            - 0
+            - 0
+          type: array
+          items:
+            type: number
+        boss_kill_counts:
+          example:
+            - 0
+            - 0
+            - 0
+            - 0
+            - 0
+            - 0
+            - 0
+            - 0
+            - 0
+          type: array
+          items:
+            type: number
+        golden_ikura_num:
+          type: number
+        ikura_num:
+          type: number
+        no_night_waves:
+          type: boolean
         danger_rate:
           type: number
         end_time:
           format: date-time
           type: string
-        grade:
-          $ref: '#/components/schemas/Grade'
-        grade_point:
-          type: number
-        grade_point_delta:
-          type: number
-        job_id:
-          type: number
-        job_rate:
-          type: number
-        job_result:
-          $ref: '#/components/schemas/JobResult'
-        job_score:
-          type: number
-        kuma_point:
-          type: number
-        my_result:
-          $ref: '#/components/schemas/PlayerResult'
-        other_results:
-          type: array
-          items:
-            $ref: '#/components/schemas/PlayerResult'
         play_time:
           format: date-time
           type: string
-        player_type:
-          $ref: '#/components/schemas/PlayerType'
-        schedule:
-          $ref: '#/components/schemas/Schedule'
         start_time:
           format: date-time
           type: string
-        wave_details:
+        members:
+          example:
+            - '0000000000000000'
+            - '1111111111111111'
+            - '2222222222222222'
+            - '3333333333333333'
           type: array
           items:
-            $ref: '#/components/schemas/WaveResult'
+            type: string
+        job_result:
+          $ref: '#/components/schemas/JobResult'
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/Player'
+        waves:
+          type: array
+          items:
+            $ref: '#/components/schemas/Wave'
+        schedule:
+          $ref: '#/components/schemas/Schedule'
       required:
+        - salmon_id
         - boss_counts
+        - boss_kill_counts
+        - golden_ikura_num
+        - ikura_num
+        - no_night_waves
         - danger_rate
         - end_time
-        - grade
-        - grade_point
-        - grade_point_delta
-        - job_id
-        - job_rate
-        - job_result
-        - job_score
-        - kuma_point
-        - my_result
-        - other_results
         - play_time
-        - player_type
-        - schedule
         - start_time
-        - wave_details
+        - members
+        - job_result
+        - players
+        - waves
+        - schedule
     Results:
       type: object
       properties:

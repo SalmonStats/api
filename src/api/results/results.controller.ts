@@ -5,7 +5,6 @@ import {
   Controller,
   Delete,
   Get,
-  NotFoundException,
   Param,
   ParseIntPipe,
   Post,
@@ -13,11 +12,9 @@ import {
   Query,
   UseInterceptors,
   ValidationPipe,
-  VersioningType,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
-  ApiBody,
   ApiExtraModels,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -28,14 +25,12 @@ import {
 import {
   ApiPaginatedResponse,
   PaginatedDto,
-  PaginatedRequestDto,
   PaginatedRequestDtoForResult,
 } from '../dto/pagination.dto';
 import { Results as UploadedResultsModel } from '../dto/result.request.dto';
 import { ResultsService } from './results.service';
-import { UploadResult, UploadResults } from './results.status';
+import { UploadResults } from './results.status';
 import { Result as ResultDto } from '../dto/result.response.dto';
-import dayjs from 'dayjs';
 
 @Controller('results')
 @ApiExtraModels(PaginatedDto)
@@ -52,6 +47,7 @@ export class ResultsController {
   @ApiParam({ name: 'salmon_id', type: 'integer', description: 'リザルトID' })
   @ApiTags('リザルト')
   @ApiOperation({ operationId: '取得' })
+  @ApiOkResponse({ type: ResultDto })
   @ApiNotFoundResponse()
   find(@Param('salmon_id', ParseIntPipe) salmonId: number): Promise<ResultDto> {
     return this.service.find(salmonId);
