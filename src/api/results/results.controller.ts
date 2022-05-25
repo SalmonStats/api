@@ -106,6 +106,12 @@ export class ResultsController {
     })();
     const request: Prisma.ResultFindManyArgs = {
       where: filter,
+      include: {
+        players: true,
+        jobResult: true,
+        waves: true,
+        schedule: true,
+      },
       skip: query.offset,
       take: query.limit,
     };

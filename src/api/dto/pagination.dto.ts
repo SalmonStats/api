@@ -49,7 +49,8 @@ export class PaginatedRequestDto {
 export class PaginatedRequestDtoForResult extends PaginatedRequestDto {
   @ApiPropertyOptional({
     title: '',
-    description: 'プレイヤーID',
+    type: Number,
+    description: 'スケジュールID',
   })
   @Expose()
   @Transform((params) => {
