@@ -1,8 +1,9 @@
 openapi: 3.0.0
 paths:
-  /users:
+  /v1/users:
     get:
-      operationId: UsersController_findMany
+      operationId: 一覧取得
+      summary: ''
       parameters:
         - name: offset
           required: true
@@ -17,9 +18,12 @@ paths:
       responses:
         '200':
           description: ''
-  /users/{user_id}:
+      tags:
+        - ユーザー
+  /v1/users/{user_id}:
     get:
-      operationId: UsersController_find
+      operationId: 取得
+      summary: ''
       parameters:
         - name: nsaid
           required: true
@@ -31,7 +35,40 @@ paths:
           description: ''
         '404':
           description: ''
-  /results/{salmon_id}:
+      tags:
+        - ユーザー
+  /v1/stats:
+    get:
+      operationId: 統計取得
+      summary: ''
+      parameters:
+        - name: is_clear
+          required: true
+          in: query
+          schema:
+            type: boolean
+        - name: nsaid
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: start_time
+          required: true
+          in: query
+          schema:
+            type: number
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatsResultsDto'
+        '404':
+          description: ''
+      tags:
+        - 統計
+  /v1/results/{salmon_id}:
     get:
       operationId: 取得
       summary: ''
@@ -77,7 +114,7 @@ paths:
           description: ''
       tags:
         - リザルト
-  /results:
+  /v1/results:
     get:
       operationId: 一括取得
       summary: ''
@@ -99,22 +136,62 @@ paths:
             title: limit
             default: 25
             type: number
+        - name: start_time
+          required: false
+          in: query
+          description: スケジュールID
+          schema:
+            title: ''
+            type: number
+        - name: nsaid
+          required: false
+          in: query
+          description: プレイヤーID
+          schema:
+            title: ''
+            type: string
         - name: is_clear
           required: false
           in: query
           description: クリアしたリザルトのみ
           schema:
             title: ''
-            default: false
             type: boolean
-        - name: nsaid
+        - name: no_night_waves
           required: false
           in: query
+          description: 夜イベントを含まないかどうか
           schema:
-            type: string
+            title: ''
+            type: boolean
+        - name: golden_ikura_num
+          required: false
+          in: query
+          description: 最小納品金イクラ数
+          schema:
+            title: ''
+            type: number
+        - name: ikura_num
+          required: false
+          in: query
+          description: 最小取得赤イクラ数
+          schema:
+            title: ''
+            type: number
       responses:
         '200':
           description: ''
+          content:
+            application/json:
+              schema:
+                title: PaginatedResponseOfResult
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedDto'
+                  - properties:
+                      results:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Result'
       tags:
         - リザルト
     post:
@@ -134,117 +211,42 @@ paths:
           description: ''
       tags:
         - リザルト
-  /results/schedules/{schedule_id}:
-    get:
-      operationId: スケジュール指定
-      summary: ''
-      parameters:
-        - name: offset
-          required: true
-          in: query
-          schema:
-            minimum: 0
-            title: offset
-            default: 0
-            type: number
-        - name: limit
-          required: true
-          in: query
-          schema:
-            minimum: 0
-            maximum: 200
-            title: limit
-            default: 25
-            type: number
-        - name: is_clear
-          required: false
-          in: query
-          description: クリアしたリザルトのみ
-          schema:
-            title: ''
-            default: false
-            type: boolean
-        - name: nsaid
-          required: false
-          in: query
-          schema:
-            type: string
-        - name: schedule_id
-          required: true
-          in: path
-          description: シフトID
-          schema:
-            type: integer
-      responses:
-        '404':
-          description: ''
-      tags:
-        - リザルト一覧
-  /results/users/{nsaid}:
-    get:
-      operationId: プレイヤー指定
-      summary: ''
-      parameters:
-        - name: nsaid
-          required: true
-          in: path
-          schema:
-            type: string
-        - name: offset
-          required: true
-          in: query
-          schema:
-            minimum: 0
-            title: offset
-            default: 0
-            type: number
-        - name: limit
-          required: true
-          in: query
-          schema:
-            minimum: 0
-            maximum: 200
-            title: limit
-            default: 25
-            type: number
-      responses:
-        '404':
-          description: ''
-      tags:
-        - リザルト一覧
-  /ranking/schedules/{schedule_id}:
+  /v1/ranks:
     get:
       operationId: 取得
       summary: ''
       parameters:
-        - name: schedule_id
+        - name: nsaid
           required: true
-          in: path
-          description: シフトID
+          in: query
           schema:
-            type: integer
+            type: string
+        - name: start_time
+          required: true
+          in: query
+          schema:
+            type: number
       responses:
         '404':
           description: ''
       tags:
         - ランキング
-  /schedules/{schedule_id}/stats:
+  /v1/ranks/{start_time}:
     get:
-      operationId: 統計取得
+      operationId: 概要取得
       summary: ''
       parameters:
-        - name: schedule_id
+        - name: start_time
           required: true
           in: path
-          description: シフトID
           schema:
-            type: integer
+            type: number
       responses:
         '404':
           description: ''
       tags:
-        - スケジュール
-  /schedules:
+        - ランキング
+  /v1/schedules:
     get:
       operationId: 取得
       summary: ''
@@ -273,6 +275,79 @@ tags: []
 servers: []
 components:
   schemas:
+    TotalResultDto:
+      type: object
+      properties:
+        global:
+          type: array
+          items:
+            type: string
+        player:
+          type: array
+          items:
+            type: string
+      required:
+        - global
+        - player
+    IkuraStat:
+      type: object
+      properties:
+        golden_ikura_num:
+          type: number
+        ikura_num:
+          type: number
+        dead_count:
+          type: number
+        help_count:
+          type: number
+      required:
+        - golden_ikura_num
+        - ikura_num
+        - dead_count
+        - help_count
+    IkuraStats:
+      type: object
+      properties:
+        max:
+          $ref: '#/components/schemas/IkuraStat'
+        min:
+          $ref: '#/components/schemas/IkuraStat'
+        avg:
+          $ref: '#/components/schemas/IkuraStat'
+        count:
+          type: number
+      required:
+        - max
+        - min
+        - avg
+        - count
+    SingleResultDto:
+      type: object
+      properties:
+        global:
+          $ref: '#/components/schemas/IkuraStats'
+        team:
+          $ref: '#/components/schemas/IkuraStats'
+        player:
+          $ref: '#/components/schemas/IkuraStats'
+        crew:
+          $ref: '#/components/schemas/IkuraStats'
+      required:
+        - global
+        - team
+    StatsResultsDto:
+      type: object
+      properties:
+        waves:
+          $ref: '#/components/schemas/TotalResultDto'
+        total:
+          $ref: '#/components/schemas/TotalResultDto'
+        single:
+          $ref: '#/components/schemas/SingleResultDto'
+      required:
+        - waves
+        - total
+        - single
     PaginatedDto:
       type: object
       properties:
@@ -406,17 +481,8 @@ components:
       properties:
         id:
           type: number
-        image:
-          type: string
-        name:
-          type: string
-        thumbnail:
-          type: string
       required:
         - id
-        - image
-        - name
-        - thumbnail
     WeaponList:
       type: object
       properties:
@@ -489,10 +555,15 @@ components:
           type: string
         stage:
           $ref: '#/components/schemas/EnumImageType'
+        weapons:
+          type: array
+          items:
+            type: string
       required:
         - start_time
         - end_time
         - stage
+        - weapons
     WaveResult:
       type: object
       properties:
