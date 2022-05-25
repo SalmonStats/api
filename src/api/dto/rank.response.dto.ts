@@ -1,7 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
+import { NodeTracing } from 'inspector';
 
-export class Rank {
+export class RankResult {
   @ApiPropertyOptional()
   salmon_id: number;
 
@@ -18,32 +19,12 @@ export class Rank {
   members: string[];
 }
 
-export class RankIkura {
+export class RankIkura<T> {
   @ApiProperty()
-  @Type(() => Rank)
-  golden_ikura_num: Rank;
+  golden_ikura_num: T;
 
   @ApiProperty()
-  @Type(() => Rank)
-  ikura_num: Rank;
-}
-
-export class GlobalRankIkura {
-  @ApiProperty()
-  @Type(() => Rank)
-  golden_ikura_num: Rank[];
-
-  @ApiProperty()
-  @Type(() => Rank)
-  ikura_num: Rank[];
-}
-
-export class RankWaveIkura {
-  @ApiProperty()
-  golden_ikura_num: number;
-
-  @ApiProperty()
-  ikura_num: number;
+  ikura_num: T;
 }
 
 export class RankBoss {
@@ -60,90 +41,64 @@ export class RankBoss {
   ikura_num: number;
 }
 
-export class RankWave {
+export class RankDetail {
   @ApiProperty()
-  @Type(() => RankWaveIkura)
-  max: RankWaveIkura;
+  @Type(() => RankIkura)
+  max: RankIkura<number>;
 
   @ApiProperty()
-  @Type(() => RankWaveIkura)
-  min: RankWaveIkura;
+  @Type(() => RankIkura)
+  min: RankIkura<number>;
 
   @ApiProperty()
-  @Type(() => RankWaveIkura)
-  avg: RankWaveIkura;
+  @Type(() => RankIkura)
+  avg: RankIkura<number>;
 
   @ApiProperty()
-  @Type(() => RankWaveIkura)
   count: number;
 }
 
-export class UserRankWave {
+export class RankWave<T> {
   waves: {
     normal: {
-      'water-levels': RankIkura;
-      rush: RankIkura;
-      'goldie-seeking': RankIkura;
-      griller: RankIkura;
-      'the-mothership': RankIkura;
-      fog: RankIkura;
+      'water-levels': T;
+      rush: T;
+      'goldie-seeking': T;
+      griller: T;
+      'the-mothership': T;
+      fog: T;
     };
     high: {
-      'water-levels': RankIkura;
-      rush: RankIkura;
-      'goldie-seeking': RankIkura;
-      griller: RankIkura;
-      'the-mothership': RankIkura;
-      fog: RankIkura;
+      'water-levels': T;
+      rush: T;
+      'goldie-seeking': T;
+      griller: T;
+      'the-mothership': T;
+      fog: T;
     };
     low: {
-      'water-levels': RankIkura;
-      'the-mothership': RankIkura;
-      fog: RankIkura;
-      'cohock-charge': RankIkura;
+      'water-levels': T;
+      'the-mothership': T;
+      fog: T;
+      'cohock-charge': T;
     };
   };
 }
 
-export class GlobalRankWave {
-  waves: {
-    normal: {
-      'water-levels': GlobalRankIkura;
-      rush: GlobalRankIkura;
-      'goldie-seeking': GlobalRankIkura;
-      griller: GlobalRankIkura;
-      'the-mothership': GlobalRankIkura;
-      fog: GlobalRankIkura;
-    };
-    high: {
-      'water-levels': GlobalRankIkura;
-      rush: GlobalRankIkura;
-      'goldie-seeking': GlobalRankIkura;
-      griller: GlobalRankIkura;
-      'the-mothership': GlobalRankIkura;
-      fog: GlobalRankIkura;
-    };
-    low: {
-      'water-levels': GlobalRankIkura;
-      'the-mothership': GlobalRankIkura;
-      fog: GlobalRankIkura;
-      'cohock-charge': GlobalRankIkura;
-    };
-  };
+class RankTotal {
+  @ApiProperty({ type: RankIkura })
+  @Type(() => RankIkura)
+  all: RankIkura<number>;
+
+  @ApiProperty({ type: RankIkura })
+  @Type(() => RankIkura)
+  no_night_waves: RankIkura<number>;
 }
 
-export class UserRank {
-  total: {
-    all: RankIkura;
-    no_night_waves: RankIkura;
-  };
-  waves: UserRankWave;
-}
+export class Rank {
+  @ApiProperty({ type: RankTotal })
+  total: RankTotal;
 
-export class GlobalRank {
-  total: {
-    all: GlobalRankIkura;
-    no_night_waves: GlobalRankIkura;
-  };
-  waves: GlobalRankWave;
+  // @ApiProperty({ type: RankWave })
+  // waves: RankWave;
 }

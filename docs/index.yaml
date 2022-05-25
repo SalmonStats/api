@@ -226,7 +226,7 @@ paths:
         - リザルト
   /v1/ranks:
     get:
-      operationId: 取得
+      operationId: ユーザランク取得
       summary: ''
       parameters:
         - name: nsaid
@@ -240,6 +240,12 @@ paths:
           schema:
             type: number
       responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rank'
         '404':
           description: ''
       tags:
@@ -255,6 +261,12 @@ paths:
           schema:
             type: number
       responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rank'
         '404':
           description: ''
       tags:
@@ -600,3 +612,30 @@ components:
             $ref: '#/components/schemas/Result'
       required:
         - results
+    RankIkura:
+      type: object
+      properties:
+        golden_ikura_num:
+          type: object
+        ikura_num:
+          type: object
+      required:
+        - golden_ikura_num
+        - ikura_num
+    RankTotal:
+      type: object
+      properties:
+        all:
+          $ref: '#/components/schemas/RankIkura'
+        no_night_waves:
+          $ref: '#/components/schemas/RankIkura'
+      required:
+        - all
+        - no_night_waves
+    Rank:
+      type: object
+      properties:
+        total:
+          $ref: '#/components/schemas/RankTotal'
+      required:
+        - total

@@ -2,17 +2,15 @@ import { Prisma } from '.prisma/client';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 import dayjs from 'dayjs';
-import { response } from 'express';
 import snakecaseKeys from 'snakecase-keys';
 import { PrismaService } from 'src/prisma.service';
 import {
-  GlobalRank,
   Rank,
   RankBoss,
+  RankDetail,
   RankIkura,
+  RankResult,
   RankWave,
-  UserRank,
-  UserRankWave,
 } from '../dto/rank.response.dto';
 
 enum WaterLevel {
@@ -44,7 +42,7 @@ export class RankingService {
     start_time: number,
     nsaid?: string,
     no_night?: boolean
-  ): Promise<RankWave> {
+  ): Promise<RankDetail> {
     const startTime: Date = dayjs.unix(start_time).toDate();
     const filter: Prisma.ResultWhereInput = (() => {
       if (nsaid === undefined) {
@@ -80,7 +78,8 @@ export class RankingService {
         _all: true,
       },
     });
-    return plainToClass(RankWave, snakecaseKeys(result));
+
+    return plainToClass(RankDetail, snakecaseKeys(result));
   }
 
   /**
@@ -93,8 +92,8 @@ export class RankingService {
   async wave(
     start_time: number,
     nsaid: string,
-    data: UserRankWave
-  ): Promise<UserRankWave> {
+    data: RankWave<RankDetail>
+  ): Promise<RankWave<RankDetail>> {
     const startTime: Date = dayjs.unix(start_time).toDate();
     const waves = await this.prisma.wave.groupBy({
       by: ['eventType', 'waterLevel'],
@@ -131,7 +130,7 @@ export class RankingService {
       return group;
     }, {});
 
-    return plainToClass(UserRankWave, response);
+    return plainToClass(RankWave, response);
   }
 
   /**
@@ -139,7 +138,7 @@ export class RankingService {
    * @param start_time スケジュールID
    * @return UserRankWave
    */
-  async waves(start_time: number): Promise<UserRankWave> {
+  async waves(start_time: number): Promise<RankWave<RankDetail>> {
     const startTime: Date = dayjs.unix(start_time).toDate();
     const waves = await this.prisma.wave.findMany({
       where: {
@@ -167,7 +166,7 @@ export class RankingService {
       group[waterKey][eventKey].push(wave.goldenIkuraNum);
       return group;
     }, {});
-    return plainToClass(UserRankWave, response);
+    return plainToClass(RankWave, response);
   }
 
   /**
@@ -250,7 +249,7 @@ export class RankingService {
       throw new BadRequestException();
     }
     // WAVE記録
-    const waves: UserRankWave = await this.wave(
+    const waves: RankWave = await this.wave(
       start_time,
       nsaid,
       await this.waves(start_time)
@@ -271,7 +270,7 @@ export class RankingService {
    * @param start_time スケジュールID
    * @return GlobalRank
    */
-  async global(start_time: number): Promise<GlobalRank> {
+  async global(start_time: number): Promise<RankResult[]> {
     const startTime = dayjs.unix(start_time).toDate();
     const goldenIkuraRank = await Promise.all(
       [true, false].map(async (no_night) => {
@@ -294,7 +293,10 @@ export class RankingService {
         });
 
         return results.map((result, index) => {
-          const data: Rank = plainToClass(Rank, snakecaseKeys(result));
+          const data: RankResult = plainToClass(
+            RankResult,
+            snakecaseKeys(result)
+          );
           data.rank = index + 1;
           return data;
         });
@@ -322,26 +324,15 @@ export class RankingService {
         });
 
         return results.map((result, index) => {
-          const data: Rank = plainToClass(Rank, snakecaseKeys(result));
+          const data: RankResult = plainToClass(
+            RankResult,
+            snakecaseKeys(result)
+          );
           data.rank = index + 1;
           return data;
         });
       })
     );
-
-    const response: GlobalRank = {
-      total: {
-        all: {
-          golden_ikura_num: goldenIkuraRank[0],
-          ikura_num: ikuraRank[0],
-        },
-        no_night_waves: {
-          golden_ikura_num: goldenIkuraRank[1],
-          ikura_num: ikuraRank[1],
-        },
-      },
-      waves: null,
-    };
-    return response;
+    return;
   }
 }
