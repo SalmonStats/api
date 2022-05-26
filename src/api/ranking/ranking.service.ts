@@ -1,12 +1,11 @@
 import { Prisma } from '.prisma/client';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConsoleLogger, Injectable } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 import dayjs from 'dayjs';
 import snakecaseKeys from 'snakecase-keys';
 import { PrismaService } from 'src/prisma.service';
 import {
   Rank,
-  RankBoss,
   RankDetail,
   RankIkura,
   RankResult,
@@ -33,35 +32,32 @@ enum EventType {
 export class RankingService {
   constructor(private readonly prisma: PrismaService) {}
 
+  filter(
+    start_time: number,
+    nsaid?: string,
+    no_night_waves?: boolean
+  ): Prisma.ResultWhereInput {
+    return {
+      startTime: dayjs.unix(start_time).toDate(),
+      noNightWaves: no_night_waves,
+      members: {
+        has: nsaid ?? null,
+      },
+    };
+  }
+
   /**
-   * 個人のWAVE記録を配列で返す
+   * 個人のTotal記録を配列で返す
    * @param arg スケジュールID
-   * @return WAVE記録の配列
+   * @return RankDetail
    */
   async aggregate(
     start_time: number,
     nsaid?: string,
     no_night?: boolean
   ): Promise<RankDetail> {
-    const startTime: Date = dayjs.unix(start_time).toDate();
-    const filter: Prisma.ResultWhereInput = (() => {
-      if (nsaid === undefined) {
-        return {
-          startTime: startTime,
-          noNightWaves: no_night,
-        };
-      } else {
-        return {
-          startTime: startTime,
-          noNightWaves: no_night,
-          members: {
-            has: nsaid,
-          },
-        };
-      }
-    })();
     const result = await this.prisma.result.aggregate({
-      where: filter,
+      where: this.filter(start_time, nsaid, no_night),
       _max: {
         goldenIkuraNum: true,
         ikuraNum: true,
@@ -87,14 +83,12 @@ export class RankingService {
    * @param start_time スケジュールID
    * @param nsaid プレイヤーID
    * @param data グローバルのWAVE記録
-   * @return UserRankWave
+   * @return RankWave
    */
-  async wave(
-    start_time: number,
-    nsaid: string,
-    data: RankWave<RankDetail>
-  ): Promise<RankWave<RankDetail>> {
+  async wave(start_time: number, nsaid: string): Promise<RankWave<RankResult>> {
     const startTime: Date = dayjs.unix(start_time).toDate();
+    // グローバル記録
+    const data = await this.waves(start_time);
     const waves = await this.prisma.wave.groupBy({
       by: ['eventType', 'waterLevel'],
       where: {
@@ -111,26 +105,32 @@ export class RankingService {
       },
     });
 
-    const response = waves.reduce((group, wave) => {
-      const { eventType, waterLevel } = wave;
-      const { goldenIkuraNum, ikuraNum } = wave._max;
-      const waterKey = Object.values(WaterLevel)[waterLevel];
-      const eventKey = Object.values(EventType)[eventType];
-      const records = data[waterKey][eventKey] as number[];
-      const rank = records.findIndex((value) => value == goldenIkuraNum) + 1;
-      group[waterKey] = group[waterKey] ?? {};
-      group[waterKey][eventKey] = group[waterKey][eventKey] ?? null;
-      group[waterKey][eventKey] = {
-        golden_ikura_num: {
-          rank: rank,
-          score: goldenIkuraNum,
-        },
-        count: records.length,
-      };
-      return group;
-    }, {});
+    const response: RankWave<RankResult> = plainToClass(
+      RankWave,
+      waves.reduce((group, wave) => {
+        const { eventType, waterLevel } = wave;
+        const { goldenIkuraNum, ikuraNum } = wave._max;
+        const waterKey = Object.values(WaterLevel)[waterLevel];
+        const eventKey = Object.values(EventType)[eventType];
+        const records = data[waterKey][eventKey] as number[];
+        const rank = records.findIndex((value) => value == goldenIkuraNum) + 1;
+        group[waterKey] = group[waterKey] ?? {};
+        group[waterKey][eventKey] = group[waterKey][eventKey] ?? null;
+        group[waterKey][eventKey] = {
+          golden_ikura_num: {
+            rank: rank,
+            golden_ikura_num: goldenIkuraNum,
+            ikura_num: ikuraNum,
+          },
+          count: records.length,
+        };
+        return group;
+      }, {})
+    );
 
-    return plainToClass(RankWave, response);
+    console.debug(response);
+
+    return response;
   }
 
   /**
@@ -138,7 +138,7 @@ export class RankingService {
    * @param start_time スケジュールID
    * @return UserRankWave
    */
-  async waves(start_time: number): Promise<RankWave<RankDetail>> {
+  async waves(start_time: number): Promise<RankWave<RankResult>> {
     const startTime: Date = dayjs.unix(start_time).toDate();
     const waves = await this.prisma.wave.findMany({
       where: {
@@ -179,19 +179,13 @@ export class RankingService {
   async ikura(
     start_time: number,
     nsaid: string,
-    no_night?: boolean
-  ): Promise<RankIkura> {
-    const player = await this.aggregate(start_time, nsaid, no_night);
+    no_night_waves?: boolean
+  ): Promise<RankIkura<RankResult>> {
+    const player = await this.aggregate(start_time, nsaid, no_night_waves);
     // const global = await this.aggregate(start_time);
-    const count = await this.prisma.result.count({
-      where: {
-        startTime: dayjs.unix(start_time).toDate(),
-        noNightWaves: no_night,
-      },
-    });
 
-    // グローバルを取得
-    const results = await this.ikuras(start_time);
+    // グローバル記録
+    const results = await this.ikuras(start_time, no_night_waves);
     const golden_ikura_num = results
       .map((result) => result.golden_ikura_num)
       .sort((x, y) => y - x);
@@ -208,7 +202,7 @@ export class RankingService {
         rank: ikura_num.indexOf(player.max.ikura_num) + 1,
         score: player.max.ikura_num,
       },
-      count: count,
+      count: results.length,
     };
 
     return plainToClass(RankIkura, response);
@@ -219,11 +213,15 @@ export class RankingService {
    * @param start_time スケジュールID
    * @return RankBoss[]
    */
-  async ikuras(start_time: number): Promise<RankBoss[]> {
+  async ikuras(
+    start_time: number,
+    no_night_waves: boolean
+  ): Promise<RankResult[]> {
     const startTime: Date = dayjs.unix(start_time).toDate();
     const results = await this.prisma.result.findMany({
       where: {
         startTime: startTime,
+        noNightWaves: no_night_waves,
       },
       select: {
         bossCounts: true,
@@ -234,7 +232,7 @@ export class RankingService {
     });
 
     return results.map((result) => {
-      return plainToClass(RankBoss, snakecaseKeys(result));
+      return plainToClass(RankResult, snakecaseKeys(result));
     });
   }
 
@@ -244,18 +242,14 @@ export class RankingService {
    * @param nsaid プレイヤーID
    * @return UserRank
    */
-  async rank(start_time: number, nsaid: string): Promise<UserRank> {
+  async rank(start_time: number, nsaid: string): Promise<Rank<RankResult>> {
     if (nsaid === undefined) {
       throw new BadRequestException();
     }
     // WAVE記録
-    const waves: RankWave = await this.wave(
-      start_time,
-      nsaid,
-      await this.waves(start_time)
-    );
+    const waves: RankWave<RankResult> = await this.wave(start_time, nsaid);
 
-    const response: UserRank = {
+    const response: Rank<RankResult> = {
       total: {
         all: await this.ikura(start_time, nsaid, true),
         no_night_waves: await this.ikura(start_time, nsaid, false),
@@ -270,7 +264,7 @@ export class RankingService {
    * @param start_time スケジュールID
    * @return GlobalRank
    */
-  async global(start_time: number): Promise<RankResult[]> {
+  async global(start_time: number): Promise<Rank<RankResult[]>> {
     const startTime = dayjs.unix(start_time).toDate();
     const goldenIkuraRank = await Promise.all(
       [true, false].map(async (no_night) => {
@@ -333,6 +327,21 @@ export class RankingService {
         });
       })
     );
-    return;
+
+    const response: Rank<RankResult[]> = {
+      total: {
+        all: {
+          golden_ikura_num: goldenIkuraRank[0],
+          ikura_num: ikuraRank[0],
+        },
+        no_night_waves: {
+          golden_ikura_num: goldenIkuraRank[1],
+          ikura_num: ikuraRank[1],
+        },
+      },
+      waves: null,
+    };
+
+    return response;
   }
 }

@@ -300,31 +300,21 @@ tags: []
 servers: []
 components:
   schemas:
-    TotalResultDto:
-      type: object
-      properties:
-        global:
-          type: array
-          items:
-            type: string
-        player:
-          type: array
-          items:
-            type: string
-      required:
-        - global
-        - player
     IkuraStat:
       type: object
       properties:
         golden_ikura_num:
           type: number
+          description: 金イクラ数
         ikura_num:
           type: number
+          description: 赤イクラ数
         dead_count:
           type: number
+          description: 被救助数
         help_count:
           type: number
+          description: 救助数
       required:
         - golden_ikura_num
         - ikura_num
@@ -334,41 +324,77 @@ components:
       type: object
       properties:
         max:
-          $ref: '#/components/schemas/IkuraStat'
+          description: 最大値
+          allOf:
+            - $ref: '#/components/schemas/IkuraStat'
         min:
-          $ref: '#/components/schemas/IkuraStat'
+          description: 最小値
+          allOf:
+            - $ref: '#/components/schemas/IkuraStat'
         avg:
-          $ref: '#/components/schemas/IkuraStat'
+          description: 平均値
+          allOf:
+            - $ref: '#/components/schemas/IkuraStat'
         count:
           type: number
+          description: 回数
       required:
         - max
         - min
         - avg
         - count
+    TotalResultDto:
+      type: object
+      properties:
+        global:
+          description: 全体
+          type: array
+          items:
+            $ref: '#/components/schemas/IkuraStats'
+        player:
+          description: 指定プレイヤーを含む
+          type: array
+          items:
+            $ref: '#/components/schemas/IkuraStats'
+      required:
+        - global
+        - player
     SingleResultDto:
       type: object
       properties:
         global:
-          $ref: '#/components/schemas/IkuraStats'
+          description: プレイヤー全体
+          allOf:
+            - $ref: '#/components/schemas/IkuraStats'
         team:
-          $ref: '#/components/schemas/IkuraStats'
+          description: 指定プレイヤーとマッチングしたプレイヤー全体
+          allOf:
+            - $ref: '#/components/schemas/IkuraStats'
         player:
-          $ref: '#/components/schemas/IkuraStats'
+          description: 指定プレイヤー
+          allOf:
+            - $ref: '#/components/schemas/IkuraStats'
         crew:
-          $ref: '#/components/schemas/IkuraStats'
+          description: 指定プレイヤーとマッチングした仲間
+          allOf:
+            - $ref: '#/components/schemas/IkuraStats'
       required:
         - global
-        - team
     StatsResultsDto:
       type: object
       properties:
         waves:
-          $ref: '#/components/schemas/TotalResultDto'
+          description: WAVE記録(チーム単位)
+          allOf:
+            - $ref: '#/components/schemas/TotalResultDto'
         total:
-          $ref: '#/components/schemas/TotalResultDto'
+          description: 総合記録(チーム単位)
+          allOf:
+            - $ref: '#/components/schemas/TotalResultDto'
         single:
-          $ref: '#/components/schemas/SingleResultDto'
+          description: 個人記録(プレイヤー単位)
+          allOf:
+            - $ref: '#/components/schemas/SingleResultDto'
       required:
         - waves
         - total
@@ -612,13 +638,37 @@ components:
             $ref: '#/components/schemas/Result'
       required:
         - results
+    RankResult:
+      type: object
+      properties:
+        salmon_id:
+          type: number
+        rank:
+          type: number
+        golden_ikura_num:
+          type: number
+        ikura_num:
+          type: number
+        members:
+          example:
+            - '0000000000000000'
+            - '1111111111111111'
+            - '2222222222222222'
+            - '3333333333333333'
+          type: array
+          items:
+            type: string
+      required:
+        - rank
+        - golden_ikura_num
+        - ikura_num
     RankIkura:
       type: object
       properties:
         golden_ikura_num:
-          type: object
+          $ref: '#/components/schemas/RankResult'
         ikura_num:
-          type: object
+          $ref: '#/components/schemas/RankResult'
       required:
         - golden_ikura_num
         - ikura_num
@@ -632,10 +682,26 @@ components:
       required:
         - all
         - no_night_waves
+    RankWave:
+      type: object
+      properties:
+        normal:
+          $ref: '#/components/schemas/RankIkura'
+        high:
+          $ref: '#/components/schemas/RankIkura'
+        low:
+          $ref: '#/components/schemas/RankIkura'
+      required:
+        - normal
+        - high
+        - low
     Rank:
       type: object
       properties:
         total:
           $ref: '#/components/schemas/RankTotal'
+        waves:
+          $ref: '#/components/schemas/RankWave'
       required:
         - total
+        - waves

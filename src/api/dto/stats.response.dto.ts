@@ -1,86 +1,88 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Expose, Transform, Type } from 'class-transformer';
-
-class Stat {
-  max: number;
-  min: number;
-  avg: number;
-}
+import { Transform, Type } from 'class-transformer';
 
 class IkuraStat {
-  @ApiProperty()
+  @ApiProperty({ description: '金イクラ数' })
   @Transform((params) => Number(parseFloat(params.value).toFixed(3)))
   golden_ikura_num: number;
 
-  @ApiProperty()
+  @ApiProperty({ description: '赤イクラ数' })
   @Transform((params) => Number(parseFloat(params.value).toFixed(3)))
   ikura_num: number;
 
-  @ApiProperty()
+  @ApiProperty({ description: '被救助数' })
   @Transform((params) => Number(parseFloat(params.value).toFixed(3)))
   dead_count: number;
 
-  @ApiProperty()
+  @ApiProperty({ description: '救助数' })
   @Transform((params) => Number(parseFloat(params.value).toFixed(3)))
   help_count: number;
 }
 
 export class IkuraStats {
-  @ApiProperty()
+  @ApiProperty({ description: '最大値' })
   @Type(() => IkuraStat)
   max: IkuraStat;
 
-  @ApiProperty()
+  @ApiProperty({ description: '最小値' })
   @Type(() => IkuraStat)
   min: IkuraStat;
 
-  @ApiProperty()
+  @ApiProperty({ description: '平均値' })
   @Type(() => IkuraStat)
   avg: IkuraStat;
 
-  @ApiProperty()
+  @ApiProperty({ description: '回数' })
   @Transform((params) => params.value['all'])
   count: number;
 }
 
 class SingleResultDto {
-  // 全員の記録
-  @ApiProperty()
+  @ApiProperty({ type: IkuraStats, description: 'プレイヤー全体' })
   global: IkuraStats;
 
-  // 自チームの平均記録
-  @ApiProperty()
+  @ApiPropertyOptional({
+    type: IkuraStats,
+    description: '指定プレイヤーとマッチングしたプレイヤー全体',
+  })
   team: IkuraStats;
 
-  // 自分の記録
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ type: IkuraStats, description: '指定プレイヤー' })
   player?: IkuraStats;
 
-  // マッチングした仲間の記録
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({
+    type: IkuraStats,
+    description: '指定プレイヤーとマッチングした仲間',
+  })
   crew?: IkuraStats;
 }
 
 class TotalResultDto {
-  // 全員の記録
-  @ApiProperty()
+  @ApiProperty({ type: [IkuraStats], description: '全体' })
+  @Type(() => IkuraStats)
   global: IkuraStats[];
 
-  // 自チームの平均記録
-  @ApiProperty()
+  @ApiProperty({
+    type: [IkuraStats],
+    description: '指定プレイヤーを含む',
+  })
+  @Type(() => IkuraStats)
   player?: IkuraStats[];
 }
 
 export class StatsResultsDto {
-  @ApiProperty()
+  @ApiProperty({ type: TotalResultDto, description: 'WAVE記録(チーム単位)' })
   @Type(() => TotalResultDto)
   waves: TotalResultDto;
 
-  @ApiProperty()
+  @ApiProperty({ type: TotalResultDto, description: '総合記録(チーム単位)' })
   @Type(() => TotalResultDto)
   total: TotalResultDto;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: SingleResultDto,
+    description: '個人記録(プレイヤー単位)',
+  })
   @Type(() => SingleResultDto)
   single: SingleResultDto;
 }

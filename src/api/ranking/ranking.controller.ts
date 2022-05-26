@@ -7,7 +7,7 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
-import { Rank as RankResponse } from '../dto/rank.response.dto';
+import { Rank, RankResult } from '../dto/rank.response.dto';
 import { RankingService } from './ranking.service';
 
 @Controller('ranks')
@@ -19,12 +19,12 @@ export class RankingController {
   @ApiOperation({ operationId: 'ユーザランク取得' })
   @ApiQuery({ name: 'nsaid', required: true, type: String })
   @ApiQuery({ name: 'start_time', required: true, type: Number })
-  @ApiOkResponse({ type: RankResponse })
+  @ApiOkResponse({ type: Rank })
   @ApiNotFoundResponse()
   findAll(
     @Query('nsaid') nsaid: string,
     @Query('start_time', ParseIntPipe) start_time: number
-  ): Promise<RankResponse> {
+  ): Promise<Rank<RankResult>> {
     return this.service.rank(start_time, nsaid);
   }
 
@@ -32,11 +32,12 @@ export class RankingController {
   @ApiTags('ランキング')
   @ApiOperation({ operationId: '概要取得' })
   @ApiParam({ name: 'start_time', required: true, type: Number })
-  @ApiOkResponse({ type: RankResponse })
+  @ApiOkResponse({ type: Rank })
   @ApiNotFoundResponse()
   find(
     @Param('start_time', ParseIntPipe) start_time: number
-  ): Promise<RankResponse> {
+  ): Promise<Rank<RankResult[]>> {
+    // return;
     return this.service.global(start_time);
   }
 }
