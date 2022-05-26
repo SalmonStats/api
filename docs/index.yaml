@@ -223,6 +223,10 @@ paths:
       responses:
         '200':
           description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadResults'
         '400':
           description: ''
       tags:
@@ -685,6 +689,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Result'
+      required:
+        - results
+    UploadResult:
+      type: object
+      properties:
+        salmon_id:
+          type: number
+          description: リザルトID
+        status:
+          type: string
+          enum:
+            - created
+            - updated
+      required:
+        - salmon_id
+        - status
+    UploadResults:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/UploadResult'
       required:
         - results
     RankResult:

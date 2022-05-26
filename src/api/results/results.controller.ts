@@ -55,7 +55,7 @@ export class ResultsController {
 
   /**
    * 指定されたリザルトID
-   * @return ResultDto
+   * @return ResultDto[]
    */
   @Get('')
   @ApiTags('リザルト')
@@ -114,10 +114,14 @@ export class ResultsController {
     return this.service.findMany(request);
   }
 
+  /**
+   * 指定されたリザルトID
+   * @return UploadResults
+   */
   @Post('')
   @ApiTags('リザルト')
   @ApiOperation({ operationId: '登録' })
-  @ApiOkResponse()
+  @ApiOkResponse({ type: UploadResults })
   @ApiBadRequestResponse()
   create(
     @Body(new ValidationPipe({ transform: true }))
