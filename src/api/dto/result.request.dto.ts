@@ -8,16 +8,10 @@ import {
   IsArray,
   IsBoolean,
   IsDate,
-  IsDateString,
-  IsEnum,
   IsInt,
-  IsNotEmpty,
   IsNumber,
-  IsNumberString,
   IsOptional,
-  IsString,
   Max,
-  min,
   Min,
   ValidateNested,
 } from 'class-validator';
@@ -431,7 +425,7 @@ export class Result {
 }
 
 export class Results {
-  @ApiProperty({ type: [Result] })
+  @ApiProperty({ type: [Result], minItems: 1, maxItems: 50 })
   @IsArray()
   @ArrayNotEmpty()
   @ArrayMaxSize(50)
