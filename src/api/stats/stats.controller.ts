@@ -10,6 +10,7 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import dayjs from 'dayjs';
@@ -24,14 +25,21 @@ export class StatsController {
   @Get('')
   @ApiTags('統計')
   @ApiOperation({ operationId: '統計取得' })
+  @ApiQuery({ name: 'nsaid', description: 'プレイヤーID' })
+  @ApiQuery({ name: 'start_time', description: 'スケジュールID' })
+  @ApiQuery({
+    name: 'is_clear',
+    description: 'クリアしたかどうか',
+    required: false,
+  })
   @ApiOkResponse({
     type: StatsResultsModel,
   })
   @ApiNotFoundResponse()
   async getStats(
-    @Query('is_clear', ParseOptionalBoolPipe) is_clear: boolean,
     @Query('nsaid') nsaid: string,
-    @Query('start_time', ParseIntPipe) start_time: number
+    @Query('start_time', ParseIntPipe) start_time: number,
+    @Query('is_clear', ParseOptionalBoolPipe) is_clear: boolean
   ) {
     const response = new StatsResultsModel();
     response.single = {

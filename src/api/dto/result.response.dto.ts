@@ -29,27 +29,27 @@ export interface WaveResult {
 
 export class Wave implements WaveResult {
   @Expose()
-  @ApiProperty()
+  @ApiProperty({ description: 'イベント' })
   event_type: number;
 
   @Expose()
-  @ApiProperty()
+  @ApiProperty({ description: '潮位' })
   water_level: number;
 
   @Expose()
-  @ApiProperty()
+  @ApiProperty({ description: '金イクラ数' })
   golden_ikura_num: number;
 
   @Expose()
-  @ApiProperty()
+  @ApiProperty({ description: '金イクラドロップ数' })
   golden_ikura_pop_num: number;
 
   @Expose()
-  @ApiProperty()
+  @ApiProperty({ description: '金イクラノルマ数' })
   quota_num: number;
 
   @Expose()
-  @ApiProperty()
+  @ApiProperty({ description: '赤イクラ数' })
   ikura_num: number;
 }
 
@@ -68,124 +68,150 @@ interface PlayerResultType {
 
 export class Player implements PlayerResultType {
   @Expose()
-  @ApiProperty({ example: '0000000000000000' })
+  @ApiProperty({ example: '0000000000000000', description: 'プレイヤーID' })
   nsaid: string;
 
   @Expose()
-  @ApiProperty({ example: 'tkgling' })
+  @ApiProperty({ example: 'tkgling', description: 'プレイヤー名' })
   name: string;
 
   @Expose()
-  @ApiProperty({ type: [Number], example: [0, 0, 0, 0, 0, 0, 0, 0, 0] })
+  @ApiProperty({
+    type: [Number],
+    example: [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    description: 'オオモノ討伐数',
+  })
   boss_kill_counts: number[];
 
   @Expose()
-  @ApiProperty()
+  @ApiProperty({ description: '被救助数' })
   dead_count: number;
 
   @Expose()
-  @ApiProperty()
+  @ApiProperty({ description: '金イクラ数' })
   golden_ikura_num: number;
 
   @Expose()
-  @ApiProperty()
+  @ApiProperty({ description: '救助数' })
   help_count: number;
 
   @Expose()
-  @ApiProperty()
+  @ApiProperty({ description: '赤イクラ数' })
   ikura_num: number;
 
   @Expose()
-  @ApiProperty()
+  @ApiProperty({ description: '支給スペシャル' })
   special_id: number;
 
   @Expose()
-  @ApiProperty({ type: [Number] })
+  @ApiProperty({ type: [Number], description: 'スペシャル使用回数' })
   special_counts: number[];
 
   @Expose()
-  @ApiProperty({ type: [Number] })
+  @ApiProperty({ type: [Number], description: '支給ブキ' })
   weapon_list: number[];
 }
 
 export class Schedule {
   @Expose()
-  @ApiProperty()
+  @ApiProperty({ description: 'シフト開始時刻' })
   start_time: Date;
 
   @Expose()
-  @ApiProperty({ enum: StageType, example: StageType.SHAKEUP })
+  @ApiProperty({
+    enum: StageType,
+    example: StageType.SHAKEUP,
+    description: 'ステージID',
+  })
   stage_id: StageType;
 
   @Expose()
-  @ApiProperty()
+  @ApiProperty({ description: 'シフト終了時刻' })
   end_time: Date;
 
   @Expose()
-  @ApiProperty({ nullable: true, default: null })
+  @ApiProperty({ nullable: true, default: null, description: '支給レアブキ' })
   rare_weapon?: number;
 
   @Expose()
-  @ApiProperty({ type: [Number] })
+  @ApiProperty({ type: [Number], description: '支給ブキリスト' })
   weapon_list: number[];
 }
 
 export class JobResult {
   @Expose()
-  @ApiProperty({ enum: FailureReason, nullable: true, example: null })
+  @ApiProperty({
+    enum: FailureReason,
+    nullable: true,
+    example: null,
+    description: 'バイト失敗理由',
+  })
   failure_reason: FailureReason;
 
   @Expose()
-  @ApiProperty({ nullable: true, example: null })
+  @ApiProperty({
+    nullable: true,
+    example: null,
+    description: 'バイト失敗WAVE数',
+  })
   failure_wave?: number;
 
   @Expose()
   @ApiProperty({
     type: Boolean,
     example: true,
+    description: 'クリアしたかどうか',
   })
   is_clear: boolean;
 }
 
 export class Result {
   @Expose()
-  @ApiProperty()
+  @ApiProperty({ description: 'リザルトID' })
   salmon_id: number;
 
   @Expose()
-  @ApiProperty({ type: [Number], example: [0, 0, 0, 0, 0, 0, 0, 0, 0] })
+  @ApiProperty({
+    type: [Number],
+    example: [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    description: 'オオモノ出現数',
+  })
   boss_counts: number[];
 
   @Expose()
-  @ApiProperty({ type: [Number], example: [0, 0, 0, 0, 0, 0, 0, 0, 0] })
+  @ApiProperty({
+    type: [Number],
+    example: [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    description: 'オオモノ討伐数',
+  })
   boss_kill_counts: number[];
 
   @Expose()
-  @ApiProperty()
+  @ApiProperty({ description: '金イクラ数' })
   golden_ikura_num: number;
 
   @Expose()
-  @ApiProperty()
+  @ApiProperty({ description: '赤イクラ数' })
   ikura_num: number;
 
   @Expose()
-  @ApiProperty()
+  @ApiProperty({ description: '夜WAVEを含むかどうか' })
   no_night_waves: boolean;
 
   @Expose()
-  @ApiProperty()
+  @ApiProperty({ description: 'キケン度' })
   danger_rate: number;
 
   @Expose()
-  @ApiProperty()
+  @ApiProperty({ description: 'シフト終了時刻' })
   end_time: Date;
 
   @Expose()
-  @ApiProperty()
+  @ApiProperty({ description: 'プレイ時刻' })
   play_time: Date;
 
   @Expose()
-  @ApiProperty()
+  @ApiProperty({ description: 'シフト開始時刻' })
   start_time: Date;
 
   @Expose()
@@ -197,26 +223,27 @@ export class Result {
       '2222222222222222',
       '3333333333333333',
     ],
+    description: 'チームメンバー(ソート済み)',
   })
   members: string[];
 
   @Expose()
   @Type(() => JobResult)
-  @ApiProperty()
+  @ApiProperty({ description: 'バイト結果' })
   job_result: JobResult;
 
   @Expose()
   @Type(() => Player)
-  @ApiProperty({ type: [Player] })
+  @ApiProperty({ type: [Player], description: 'プレイヤーリザルト' })
   players: Player[];
 
   @Expose()
   @Type(() => Wave)
-  @ApiProperty({ type: [Wave] })
+  @ApiProperty({ type: [Wave], description: 'WAVEリザルト' })
   waves: Wave[];
 
   @Expose()
   @Type(() => Schedule)
-  @ApiProperty({ type: Schedule })
+  @ApiProperty({ type: Schedule, description: 'スケジュール' })
   schedule: Schedule;
 }

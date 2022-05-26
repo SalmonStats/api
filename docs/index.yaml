@@ -49,21 +49,24 @@ paths:
       operationId: 統計取得
       summary: ''
       parameters:
-        - name: is_clear
-          required: true
-          in: query
-          schema:
-            type: boolean
         - name: nsaid
           required: true
           in: query
+          description: プレイヤーID
           schema:
             type: string
         - name: start_time
           required: true
           in: query
+          description: スケジュールID
           schema:
             type: number
+        - name: is_clear
+          required: false
+          in: query
+          description: クリアしたかどうか
+          schema:
+            type: boolean
       responses:
         '200':
           description: ''
@@ -232,11 +235,13 @@ paths:
         - name: nsaid
           required: true
           in: query
+          description: プレイヤーID
           schema:
             type: string
         - name: start_time
           required: true
           in: query
+          description: スケジュールID
           schema:
             type: number
       responses:
@@ -257,7 +262,8 @@ paths:
       parameters:
         - name: start_time
           required: true
-          in: path
+          in: query
+          description: スケジュールID
           schema:
             type: number
       responses:
@@ -425,13 +431,16 @@ components:
             - wipe_out
           nullable: true
           example: null
+          description: バイト失敗理由
         failure_wave:
           type: number
           nullable: true
           example: null
+          description: バイト失敗WAVE数
         is_clear:
           type: boolean
           example: true
+          description: クリアしたかどうか
       required:
         - failure_reason
         - failure_wave
@@ -442,9 +451,11 @@ components:
         nsaid:
           type: string
           example: '0000000000000000'
+          description: プレイヤーID
         name:
           type: string
           example: tkgling
+          description: プレイヤー名
         boss_kill_counts:
           example:
             - 0
@@ -456,24 +467,32 @@ components:
             - 0
             - 0
             - 0
+          description: オオモノ討伐数
           type: array
           items:
             type: number
         dead_count:
           type: number
+          description: 被救助数
         golden_ikura_num:
           type: number
+          description: 金イクラ数
         help_count:
           type: number
+          description: 救助数
         ikura_num:
           type: number
+          description: 赤イクラ数
         special_id:
           type: number
+          description: 支給スペシャル
         special_counts:
+          description: スペシャル使用回数
           type: array
           items:
             type: number
         weapon_list:
+          description: 支給ブキ
           type: array
           items:
             type: number
@@ -493,16 +512,22 @@ components:
       properties:
         event_type:
           type: number
+          description: イベント
         water_level:
           type: number
+          description: 潮位
         golden_ikura_num:
           type: number
+          description: 金イクラ数
         golden_ikura_pop_num:
           type: number
+          description: 金イクラドロップ数
         quota_num:
           type: number
+          description: 金イクラノルマ数
         ikura_num:
           type: number
+          description: 赤イクラ数
       required:
         - event_type
         - water_level
@@ -516,6 +541,7 @@ components:
         start_time:
           format: date-time
           type: string
+          description: シフト開始時刻
         stage_id:
           type: string
           enum:
@@ -525,14 +551,18 @@ components:
             - SHAKELIFT
             - SHAKELIDE
           example: 5000
+          description: ステージID
         end_time:
           format: date-time
           type: string
+          description: シフト終了時刻
         rare_weapon:
           type: number
           nullable: true
           default: null
+          description: 支給レアブキ
         weapon_list:
+          description: 支給ブキリスト
           type: array
           items:
             type: number
@@ -547,6 +577,7 @@ components:
       properties:
         salmon_id:
           type: number
+          description: リザルトID
         boss_counts:
           example:
             - 0
@@ -558,6 +589,7 @@ components:
             - 0
             - 0
             - 0
+          description: オオモノ出現数
           type: array
           items:
             type: number
@@ -572,47 +604,62 @@ components:
             - 0
             - 0
             - 0
+          description: オオモノ討伐数
           type: array
           items:
             type: number
         golden_ikura_num:
           type: number
+          description: 金イクラ数
         ikura_num:
           type: number
+          description: 赤イクラ数
         no_night_waves:
           type: boolean
+          description: 夜WAVEを含むかどうか
         danger_rate:
           type: number
+          description: キケン度
         end_time:
           format: date-time
           type: string
+          description: シフト終了時刻
         play_time:
           format: date-time
           type: string
+          description: プレイ時刻
         start_time:
           format: date-time
           type: string
+          description: シフト開始時刻
         members:
           example:
             - '0000000000000000'
             - '1111111111111111'
             - '2222222222222222'
             - '3333333333333333'
+          description: チームメンバー(ソート済み)
           type: array
           items:
             type: string
         job_result:
-          $ref: '#/components/schemas/JobResult'
+          description: バイト結果
+          allOf:
+            - $ref: '#/components/schemas/JobResult'
         players:
+          description: プレイヤーリザルト
           type: array
           items:
             $ref: '#/components/schemas/Player'
         waves:
+          description: WAVEリザルト
           type: array
           items:
             $ref: '#/components/schemas/Wave'
         schedule:
-          $ref: '#/components/schemas/Schedule'
+          description: スケジュール
+          allOf:
+            - $ref: '#/components/schemas/Schedule'
       required:
         - salmon_id
         - boss_counts
@@ -643,18 +690,23 @@ components:
       properties:
         salmon_id:
           type: number
+          description: リザルトID
         rank:
           type: number
+          description: ランク
         golden_ikura_num:
           type: number
+          description: 金イクラ数
         ikura_num:
           type: number
+          description: 赤イクラ数
         members:
           example:
             - '0000000000000000'
             - '1111111111111111'
             - '2222222222222222'
             - '3333333333333333'
+          description: チームメンバー(ソート済み)
           type: array
           items:
             type: string
@@ -666,9 +718,16 @@ components:
       type: object
       properties:
         golden_ikura_num:
-          $ref: '#/components/schemas/RankResult'
+          description: 金イクラランキング
+          allOf:
+            - $ref: '#/components/schemas/RankResult'
         ikura_num:
-          $ref: '#/components/schemas/RankResult'
+          description: 赤イクラランキング
+          allOf:
+            - $ref: '#/components/schemas/RankResult'
+        count:
+          type: number
+          description: 回数
       required:
         - golden_ikura_num
         - ikura_num
@@ -676,32 +735,100 @@ components:
       type: object
       properties:
         all:
-          $ref: '#/components/schemas/RankIkura'
+          description: 夜イベントを含む
+          allOf:
+            - $ref: '#/components/schemas/RankIkura'
         no_night_waves:
-          $ref: '#/components/schemas/RankIkura'
+          description: 夜イベントを含まない
+          allOf:
+            - $ref: '#/components/schemas/RankIkura'
       required:
         - all
         - no_night_waves
+    RankWaveEventHigh:
+      type: object
+      properties:
+        water-levels:
+          $ref: '#/components/schemas/RankResult'
+        rush:
+          $ref: '#/components/schemas/RankResult'
+        goldie-seeking:
+          $ref: '#/components/schemas/RankResult'
+        griller:
+          $ref: '#/components/schemas/RankResult'
+        the-mothership:
+          $ref: '#/components/schemas/RankResult'
+        fog:
+          $ref: '#/components/schemas/RankResult'
+      required:
+        - water-levels
+        - rush
+        - goldie-seeking
+        - griller
+        - the-mothership
+        - fog
+    RankWaveEventNormal:
+      type: object
+      properties:
+        water-levels:
+          $ref: '#/components/schemas/RankResult'
+        rush:
+          $ref: '#/components/schemas/RankResult'
+        goldie-seeking:
+          $ref: '#/components/schemas/RankResult'
+        griller:
+          $ref: '#/components/schemas/RankResult'
+        the-mothership:
+          $ref: '#/components/schemas/RankResult'
+        fog:
+          $ref: '#/components/schemas/RankResult'
+      required:
+        - water-levels
+        - rush
+        - goldie-seeking
+        - griller
+        - the-mothership
+        - fog
+    RankWaveEventLow:
+      type: object
+      properties:
+        water-levels:
+          $ref: '#/components/schemas/RankResult'
+        the-mothership:
+          $ref: '#/components/schemas/RankResult'
+        fog:
+          $ref: '#/components/schemas/RankResult'
+        cohock-charge:
+          $ref: '#/components/schemas/RankResult'
+      required:
+        - water-levels
+        - the-mothership
+        - fog
+        - cohock-charge
     RankWave:
       type: object
       properties:
-        normal:
-          $ref: '#/components/schemas/RankIkura'
         high:
-          $ref: '#/components/schemas/RankIkura'
+          $ref: '#/components/schemas/RankWaveEventHigh'
+        normal:
+          $ref: '#/components/schemas/RankWaveEventNormal'
         low:
-          $ref: '#/components/schemas/RankIkura'
+          $ref: '#/components/schemas/RankWaveEventLow'
       required:
-        - normal
         - high
+        - normal
         - low
     Rank:
       type: object
       properties:
         total:
-          $ref: '#/components/schemas/RankTotal'
+          description: 総合記録ランク
+          allOf:
+            - $ref: '#/components/schemas/RankTotal'
         waves:
-          $ref: '#/components/schemas/RankWave'
+          description: WAVE記録ランク
+          allOf:
+            - $ref: '#/components/schemas/RankWave'
       required:
         - total
         - waves

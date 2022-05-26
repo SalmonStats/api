@@ -17,8 +17,8 @@ export class RankingController {
   @Get('')
   @ApiTags('ランキング')
   @ApiOperation({ operationId: 'ユーザランク取得' })
-  @ApiQuery({ name: 'nsaid', required: true, type: String })
-  @ApiQuery({ name: 'start_time', required: true, type: Number })
+  @ApiQuery({ name: 'nsaid', description: 'プレイヤーID' })
+  @ApiQuery({ name: 'start_time', description: 'スケジュールID' })
   @ApiOkResponse({ type: Rank })
   @ApiNotFoundResponse()
   findAll(
@@ -31,7 +31,7 @@ export class RankingController {
   @Get(':start_time')
   @ApiTags('ランキング')
   @ApiOperation({ operationId: '概要取得' })
-  @ApiParam({ name: 'start_time', required: true, type: Number })
+  @ApiQuery({ name: 'start_time', description: 'スケジュールID' })
   @ApiOkResponse({ type: Rank })
   @ApiNotFoundResponse()
   find(
