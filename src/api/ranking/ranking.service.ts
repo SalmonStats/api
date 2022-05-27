@@ -1,5 +1,5 @@
 import { Prisma } from '.prisma/client';
-import { BadRequestException, ConsoleLogger, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 import dayjs from 'dayjs';
 import snakecaseKeys from 'snakecase-keys';
@@ -127,8 +127,6 @@ export class RankingService {
         return group;
       }, {})
     );
-
-    console.debug(response);
 
     return response;
   }
