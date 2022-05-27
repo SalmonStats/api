@@ -27,12 +27,23 @@ export class RankResult {
   members: string[];
 }
 
-export class RankIkura<T> {
+export class RankIkura {
   @ApiProperty({ type: RankResult, description: '金イクラランキング' })
-  golden_ikura_num: T;
+  golden_ikura_num: number;
 
   @ApiProperty({ type: RankResult, description: '赤イクラランキング' })
-  ikura_num: T;
+  ikura_num: number;
+
+  @ApiPropertyOptional({ description: '回数' })
+  count?: number;
+}
+
+export class RankIkuras {
+  @ApiProperty({ type: RankResult, description: '金イクラランキング' })
+  golden_ikura_num: RankResult[];
+
+  @ApiProperty({ type: RankResult, description: '赤イクラランキング' })
+  ikura_num: RankResult[];
 
   @ApiPropertyOptional({ description: '回数' })
   count?: number;
@@ -44,85 +55,95 @@ export class RankIkura<T> {
 export class RankDetail {
   @ApiProperty()
   @Type(() => RankIkura)
-  max: RankIkura<number>;
+  max: RankIkura;
 
   @ApiProperty()
   @Type(() => RankIkura)
-  min: RankIkura<number>;
+  min: RankIkura;
 
   @ApiProperty()
   @Type(() => RankIkura)
-  avg: RankIkura<number>;
+  avg: RankIkura;
 
   @ApiProperty()
   @Transform((params) => params.value['all'])
   count: number;
 }
 
-export class RankWaveEventHigh<T> {
+export class RankWaveEventHigh {
   @ApiProperty({ type: RankResult })
-  'water-levels': T;
+  'water-levels': RankResult;
   @ApiProperty({ type: RankResult })
-  rush?: T;
+  rush: RankResult;
   @ApiProperty({ type: RankResult })
-  'goldie-seeking'?: T;
+  'goldie-seeking': RankResult;
   @ApiProperty({ type: RankResult })
-  griller?: T;
+  griller: RankResult;
   @ApiProperty({ type: RankResult })
-  'the-mothership': T;
+  'the-mothership': RankResult;
   @ApiProperty({ type: RankResult })
-  fog: T;
+  fog: RankResult;
 }
 
-export class RankWaveEventNormal<T> {
+export class RankWaveEventNormal {
   @ApiProperty({ type: RankResult })
-  'water-levels': T;
+  'water-levels': RankResult;
   @ApiProperty({ type: RankResult })
-  rush?: T;
+  rush: RankResult;
   @ApiProperty({ type: RankResult })
-  'goldie-seeking'?: T;
+  'goldie-seeking': RankResult;
   @ApiProperty({ type: RankResult })
-  griller?: T;
+  griller: RankResult;
   @ApiProperty({ type: RankResult })
-  'the-mothership': T;
+  'the-mothership': RankResult;
   @ApiProperty({ type: RankResult })
-  fog: T;
+  fog: RankResult;
 }
 
-export class RankWaveEventLow<T> {
+export class RankWaveEventLow {
   @ApiProperty({ type: RankResult })
-  'water-levels': T;
+  'water-levels': RankResult;
   @ApiProperty({ type: RankResult })
-  'the-mothership': T;
+  'the-mothership': RankResult;
   @ApiProperty({ type: RankResult })
-  fog: T;
+  fog: RankResult;
   @ApiProperty({ type: RankResult })
-  'cohock-charge': T;
+  'cohock-charge': RankResult;
 }
 
-export class RankWave<T> {
+export class RankWave {
   @ApiProperty({ type: RankWaveEventHigh })
-  high: RankWaveEventHigh<T>;
+  high: RankWaveEventHigh;
   @ApiProperty({ type: RankWaveEventNormal })
-  normal: RankWaveEventNormal<T>;
+  normal: RankWaveEventNormal;
   @ApiProperty({ type: RankWaveEventLow })
-  low: RankWaveEventLow<T>;
+  low: RankWaveEventLow;
 }
 
-class RankTotal<T> {
+class RankTotal {
   @ApiProperty({ type: RankIkura, description: '夜イベントを含む' })
   @Type(() => RankIkura)
-  all: RankIkura<T>;
+  all: RankIkuras;
 
   @ApiProperty({ type: RankIkura, description: '夜イベントを含まない' })
   @Type(() => RankIkura)
-  no_night_waves: RankIkura<T>;
+  no_night_waves: RankIkuras;
 }
 
-export class Rank<T> {
+class RankTotals {
+  @ApiProperty({ type: RankIkura, description: '夜イベントを含む' })
+  @Type(() => RankIkura)
+  all: RankIkuras;
+
+  @ApiProperty({ type: RankIkura, description: '夜イベントを含まない' })
+  @Type(() => RankIkura)
+  no_night_waves: RankIkuras;
+}
+
+export class Rank {
   @ApiProperty({ type: RankTotal, description: '総合記録ランク' })
-  total: RankTotal<T>;
+  total: RankTotal;
 
   @ApiProperty({ type: RankWave, description: 'WAVE記録ランク' })
-  waves: RankWave<T>;
+  waves: RankWave;
 }

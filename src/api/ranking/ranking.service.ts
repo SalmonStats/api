@@ -7,7 +7,7 @@ import { PrismaService } from 'src/prisma.service';
 import {
   Rank,
   RankDetail,
-  RankIkura,
+  RankIkuras,
   RankResult,
   RankWave,
 } from '../dto/rank.response.dto';
@@ -85,7 +85,7 @@ export class RankingService {
    * @param data グローバルのWAVE記録
    * @return RankWave
    */
-  async wave(start_time: number, nsaid: string): Promise<RankWave<RankResult>> {
+  async wave(start_time: number, nsaid: string): Promise<RankWave> {
     const startTime: Date = dayjs.unix(start_time).toDate();
     // グローバル記録
     const data = await this.waves(start_time);
@@ -105,7 +105,7 @@ export class RankingService {
       },
     });
 
-    const response: RankWave<RankResult> = plainToClass(
+    const response: RankWave = plainToClass(
       RankWave,
       waves.reduce((group, wave) => {
         const { eventType, waterLevel } = wave;
@@ -138,7 +138,7 @@ export class RankingService {
    * @param start_time スケジュールID
    * @return UserRankWave
    */
-  async waves(start_time: number): Promise<RankWave<RankResult>> {
+  async waves(start_time: number): Promise<RankWave> {
     const startTime: Date = dayjs.unix(start_time).toDate();
     const waves = await this.prisma.wave.findMany({
       where: {
@@ -180,7 +180,7 @@ export class RankingService {
     start_time: number,
     nsaid: string,
     no_night_waves?: boolean
-  ): Promise<RankIkura<RankResult>> {
+  ): Promise<RankIkuras> {
     const player = await this.aggregate(start_time, nsaid, no_night_waves);
     // const global = await this.aggregate(start_time);
 
@@ -205,7 +205,7 @@ export class RankingService {
       count: results.length,
     };
 
-    return plainToClass(RankIkura, response);
+    return plainToClass(RankIkuras, response);
   }
 
   /**
@@ -242,14 +242,14 @@ export class RankingService {
    * @param nsaid プレイヤーID
    * @return UserRank
    */
-  async rank(start_time: number, nsaid: string): Promise<Rank<RankResult>> {
+  async rank(start_time: number, nsaid: string): Promise<Rank> {
     if (nsaid === undefined) {
       throw new BadRequestException();
     }
     // WAVE記録
-    const waves: RankWave<RankResult> = await this.wave(start_time, nsaid);
+    const waves: RankWave = await this.wave(start_time, nsaid);
 
-    const response: Rank<RankResult> = {
+    const response: Rank = {
       total: {
         all: await this.ikura(start_time, nsaid, true),
         no_night_waves: await this.ikura(start_time, nsaid, false),
@@ -264,7 +264,7 @@ export class RankingService {
    * @param start_time スケジュールID
    * @return GlobalRank
    */
-  async global(start_time: number): Promise<Rank<RankResult[]>> {
+  async global(start_time: number): Promise<Rank> {
     const startTime = dayjs.unix(start_time).toDate();
     const goldenIkuraRank = await Promise.all(
       [true, false].map(async (no_night) => {
@@ -328,7 +328,7 @@ export class RankingService {
       })
     );
 
-    const response: Rank<RankResult[]> = {
+    const response: Rank = {
       total: {
         all: {
           golden_ikura_num: goldenIkuraRank[0],
