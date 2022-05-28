@@ -26,6 +26,7 @@ async function bootstrap() {
   }
   const options = new DocumentBuilder()
     .setTitle('Salmon Stats API Documents')
+    .setVersion('1.0.2')
     .build();
   const documents = SwaggerModule.createDocument(app, options);
   if (process.env.NODE_ENV !== 'production') {
