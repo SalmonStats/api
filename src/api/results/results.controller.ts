@@ -102,6 +102,9 @@ export class ResultsController {
     })();
     const request: Prisma.ResultFindManyArgs = {
       where: filter,
+      orderBy: {
+        salmonId: query.order ? 'asc' : 'desc',
+      },
       include: {
         players: true,
         jobResult: true,

@@ -14,7 +14,6 @@ import {
 import { Expose, Transform } from 'class-transformer';
 import {
   IsBoolean,
-  IsBooleanString,
   IsDate,
   IsInt,
   IsOptional,
@@ -47,6 +46,15 @@ export class PaginatedRequestDto {
 }
 
 export class PaginatedRequestDtoForResult extends PaginatedRequestDto {
+  @Expose()
+  @Transform((params) => params.value === 'true')
+  @IsBoolean()
+  @ApiPropertyOptional({
+    title: 'order',
+    default: null,
+  })
+  readonly order: boolean;
+
   @ApiPropertyOptional({
     title: '',
     type: Number,
