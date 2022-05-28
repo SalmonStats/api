@@ -20,7 +20,7 @@ async function bootstrap() {
     defaultVersion: '1',
   });
   if (process.env.NODE_ENV === 'production') {
-    app.useGlobalPipes(new ValidationPipe({ disableErrorMessages: false }));
+    app.useGlobalPipes(new ValidationPipe({ disableErrorMessages: true }));
   } else {
     app.useGlobalPipes(new ValidationPipe({ disableErrorMessages: false }));
   }
