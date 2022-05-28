@@ -24,7 +24,7 @@ export class RankingController {
   findAll(
     @Query('nsaid') nsaid: string,
     @Query('start_time', ParseIntPipe) start_time: number
-  ): Promise<Rank<RankResult>> {
+  ): Promise<Rank> {
     return this.service.rank(start_time, nsaid);
   }
 
@@ -34,9 +34,7 @@ export class RankingController {
   @ApiQuery({ name: 'start_time', description: 'スケジュールID' })
   @ApiOkResponse({ type: Rank })
   @ApiNotFoundResponse()
-  find(
-    @Param('start_time', ParseIntPipe) start_time: number
-  ): Promise<Rank<RankResult[]>> {
+  find(@Param('start_time', ParseIntPipe) start_time: number): Promise<Rank> {
     // return;
     return this.service.global(start_time);
   }

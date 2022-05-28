@@ -6,9 +6,11 @@ import * as path from 'path';
 import { mkdir, writeFileSync } from 'fs';
 import { dump } from 'js-yaml';
 import { exec } from 'child_process';
+import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.use(bodyParser.json({ limit: '1mb' }));
   app.enableVersioning({
     type: VersioningType.URI,
     defaultVersion: '1',
