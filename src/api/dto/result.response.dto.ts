@@ -76,6 +76,10 @@ export class Player implements PlayerResultType {
   name: string;
 
   @Expose()
+  @ApiProperty({ description: 'バイト回数' })
+  job_id: number;
+
+  @Expose()
   @ApiProperty({
     type: [Number],
     example: [0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -98,6 +102,14 @@ export class Player implements PlayerResultType {
   @Expose()
   @ApiProperty({ description: '赤イクラ数' })
   ikura_num: number;
+
+  @Expose()
+  @ApiProperty({ description: '評価レート' })
+  grade_point: number;
+
+  @Expose()
+  @ApiProperty({ description: '評価レート変動' })
+  grade_point_delta: number;
 
   @Expose()
   @ApiProperty({ description: '支給スペシャル' })

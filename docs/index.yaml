@@ -152,6 +152,13 @@ paths:
             title: limit
             default: 25
             type: number
+        - name: order
+          required: false
+          in: query
+          schema:
+            title: order
+            default: null
+            type: boolean
         - name: start_time
           required: false
           in: query
@@ -304,7 +311,7 @@ paths:
 info:
   title: Salmon Stats API Documents
   description: ''
-  version: 1.0.0
+  version: 1.0.3
   contact: {}
 tags: []
 servers: []
@@ -460,6 +467,9 @@ components:
           type: string
           example: tkgling
           description: プレイヤー名
+        job_id:
+          type: number
+          description: バイト回数
         boss_kill_counts:
           example:
             - 0
@@ -487,6 +497,12 @@ components:
         ikura_num:
           type: number
           description: 赤イクラ数
+        grade_point:
+          type: number
+          description: 評価レート
+        grade_point_delta:
+          type: number
+          description: 評価レート変動
         special_id:
           type: number
           description: 支給スペシャル
@@ -503,11 +519,14 @@ components:
       required:
         - nsaid
         - name
+        - job_id
         - boss_kill_counts
         - dead_count
         - golden_ikura_num
         - help_count
         - ikura_num
+        - grade_point
+        - grade_point_delta
         - special_id
         - special_counts
         - weapon_list
