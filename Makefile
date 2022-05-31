@@ -1,3 +1,5 @@
+include .env
+
 .PHONY: dev
 dev:
 	NODE_ENV=development yarn start:dev
@@ -12,4 +14,8 @@ init:
 
 .PHONY: build
 build:
-	docker build -t tkgling/salmon-stats-app:latest .
+	docker build -t tkgling/salmon-stats-app:${API_VER} .
+
+.PHONY: push
+push:
+	docker push tkgling/salmon-stats-app:${API_VER}
