@@ -104,6 +104,10 @@ export class Player implements PlayerResultType {
   ikura_num: number;
 
   @Expose()
+  @ApiProperty({ description: '評価' })
+  grade_id: number;
+
+  @Expose()
   @ApiProperty({ description: '評価レート' })
   grade_point: number;
 

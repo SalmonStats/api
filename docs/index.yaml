@@ -497,6 +497,9 @@ components:
         ikura_num:
           type: number
           description: 赤イクラ数
+        grade_id:
+          type: number
+          description: 評価
         grade_point:
           type: number
           description: 評価レート
@@ -525,6 +528,7 @@ components:
         - golden_ikura_num
         - help_count
         - ikura_num
+        - grade_id
         - grade_point
         - grade_point_delta
         - special_id
