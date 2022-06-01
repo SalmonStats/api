@@ -27,7 +27,7 @@ paths:
           description: ''
       tags:
         - ユーザー
-  /v1/users/{user_id}:
+  /v1/users/{nsaid}:
     get:
       operationId: 取得
       summary: ''
@@ -35,8 +35,9 @@ paths:
         - name: nsaid
           required: true
           in: path
+          example: 91d160aa84e88da6
           schema:
-            type: number
+            type: string
       responses:
         '200':
           description: ''

@@ -4,13 +4,12 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { query } from 'express';
 import { PaginatedRequestDto } from '../dto/pagination.dto';
-import { ParseOptionalUnsignedIntPipe } from '../validation/parse-optional-unsigned-int.pipe';
-import { UsersService } from './users.service';
+import { UserData, UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {
@@ -24,12 +23,13 @@ export class UsersController {
     return this.service.findMany(query);
   }
 
-  @Get(':user_id')
+  @Get(':nsaid')
   @ApiTags('ユーザー')
   @ApiOperation({ operationId: '取得' })
   @ApiOkResponse()
   @ApiNotFoundResponse()
-  find(@Param('nsaid') id: number): Promise<UserModel> {
-    return this.service.find(id);
+  @ApiParam({ name: 'nsaid', example: '91d160aa84e88da6' })
+  find(@Param('nsaid') nsaid: string): Promise<UserData> {
+    return this.service.find(nsaid);
   }
 }
