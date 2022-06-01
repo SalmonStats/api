@@ -1,9 +1,12 @@
-import { User as UserModel } from '.prisma/client';
+import { Player, User as UserModel } from '.prisma/client';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Expose, plainToClass, Transform } from 'class-transformer';
 import snakecaseKeys from 'snakecase-keys';
 import { PrismaService } from 'src/prisma.service';
-import { PaginatedRequestDto } from '../dto/pagination.dto';
+import {
+  PaginatedRequestDto,
+  PaginatedRequestDtoForUser,
+} from '../dto/pagination.dto';
 import { Result } from '../dto/result.response.dto';
 
 export class UserData {
@@ -46,8 +49,29 @@ export class UserData {
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findMany(query: PaginatedRequestDto): Promise<UserModel[]> {
-    return await this.prisma.user.findMany({
+  async findMany(
+    query: PaginatedRequestDtoForUser
+  ): Promise<Partial<Player>[]> {
+    return await this.prisma.player.findMany({
+      where: {
+        OR: [
+          {
+            name: {
+              startsWith: query.nickname,
+            },
+          },
+          {
+            name: {
+              endsWith: query.nickname,
+            },
+          },
+        ],
+      },
+      distinct: ['nsaid'],
+      select: {
+        nsaid: true,
+        name: true,
+      },
       skip: query.offset,
       take: query.limit,
     });

@@ -1,5 +1,12 @@
-import { User as UserModel } from '.prisma/client';
-import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
+import { Player, User as UserModel } from '.prisma/client';
+import {
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Query,
+  ValidationPipe,
+} from '@nestjs/common';
 import {
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -8,7 +15,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { PaginatedRequestDto } from '../dto/pagination.dto';
+import { PaginatedRequestDtoForUser } from '../dto/pagination.dto';
 import { UserData, UsersService } from './users.service';
 
 @Controller('users')
@@ -19,7 +26,10 @@ export class UsersController {
   @ApiTags('ユーザー')
   @ApiOperation({ operationId: '一覧取得' })
   @ApiOkResponse()
-  findMany(@Query() query: PaginatedRequestDto): Promise<UserModel[]> {
+  findMany(
+    @Query(new ValidationPipe({ transform: true }))
+    query: PaginatedRequestDtoForUser
+  ): Promise<Partial<Player>[]> {
     return this.service.findMany(query);
   }
 

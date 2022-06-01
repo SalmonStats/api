@@ -45,6 +45,12 @@ export class PaginatedRequestDto {
   readonly limit: number;
 }
 
+export class PaginatedRequestDtoForUser extends PaginatedRequestDto {
+  @ApiPropertyOptional()
+  @IsString()
+  nickname: string;
+}
+
 export class PaginatedRequestDtoForResult extends PaginatedRequestDto {
   @Expose()
   @Transform((params) => params.value === 'true')
