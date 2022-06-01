@@ -90,6 +90,9 @@ export class UsersService {
             has: nsaid,
           },
         },
+        include: {
+          waves: true,
+        },
         orderBy: {
           playTime: 'desc',
         },
