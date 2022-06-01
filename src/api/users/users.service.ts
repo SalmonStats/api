@@ -91,7 +91,7 @@ export class UsersService {
           },
         },
         include: {
-          waves: true,
+          jobResult: true,
         },
         orderBy: {
           playTime: 'desc',
@@ -99,7 +99,12 @@ export class UsersService {
         skip: 0,
         take: 50,
       })
-    ).map((result) => plainToClass(Result, result));
+    ).map((result) =>
+      plainToClass(Result, result, {
+        exposeUnsetFields: false,
+        excludeExtraneousValues: true,
+      })
+    );
 
     user.results = results;
     return user;
