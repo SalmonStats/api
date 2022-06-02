@@ -245,21 +245,40 @@ paths:
           description: ''
       tags:
         - リザルト
-  /v1/ranks:
+  /v1/ranks/{start_time}:
     get:
-      operationId: ユーザランク取得
+      operationId: 各種ランキング取得
       summary: ''
+      description: シフトごとのいろんな記録を取得
+      parameters:
+        - name: start_time
+          required: true
+          in: path
+          schema:
+            type: number
+      responses:
+        '200':
+          description: ''
+      tags: &ref_0
+        - ランキング
+  /v1/ranks/{start_time}/users:
+    get:
+      operationId: ユーザランキング取得
+      summary: ''
+      description: シフトでの自チームのイクラ獲得ランキング
       parameters:
         - name: nsaid
           required: true
           in: query
           description: プレイヤーID
+          example: 91d160aa84e88da6
           schema:
             type: string
         - name: start_time
           required: true
-          in: query
+          in: path
           description: スケジュールID
+          example: 1654020000
           schema:
             type: number
       responses:
@@ -271,17 +290,18 @@ paths:
                 $ref: '#/components/schemas/Rank'
         '404':
           description: ''
-      tags:
-        - ランキング
-  /v1/ranks/{start_time}:
+      tags: *ref_0
+  /v1/ranks/{start_time}/teams:
     get:
-      operationId: 概要取得
+      operationId: チームランキング取得
       summary: ''
+      description: シフトでのチームごとのイクラ獲得ランキング(WAVE記録は非対応)
       parameters:
         - name: start_time
           required: true
-          in: query
+          in: path
           description: スケジュールID
+          example: 1654020000
           schema:
             type: number
       responses:
@@ -293,8 +313,7 @@ paths:
                 $ref: '#/components/schemas/Rank'
         '404':
           description: ''
-      tags:
-        - ランキング
+      tags: *ref_0
   /v1/schedules:
     get:
       operationId: 取得

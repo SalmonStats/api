@@ -1,6 +1,6 @@
 import { Prisma } from '.prisma/client';
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { plainToClass } from 'class-transformer';
+import { plainToClass, Transform } from 'class-transformer';
 import dayjs from 'dayjs';
 import snakecaseKeys from 'snakecase-keys';
 import { PrismaService } from 'src/prisma.service';
@@ -28,11 +28,73 @@ enum EventType {
   COHOCKCHARGE = 'cohock-charge',
 }
 
+class ShiftStatsParam {
+  @Transform((params) => Number(params.value.toFixed(2)))
+  golden_ikura_num: number;
+
+  @Transform((params) => Number(params.value.toFixed(2)))
+  ikura_num: number;
+
+  @Transform((params) => Number(params.value.toFixed(2)))
+  dead_count: number;
+
+  @Transform((params) => Number(params.value.toFixed(2)))
+  help_count: number;
+}
+
+export class ShiftStatsDto {
+  nsaid: string;
+  sum: ShiftStatsParam;
+  avg: ShiftStatsParam;
+  max: ShiftStatsParam;
+  @Transform((params) => params.value['all'])
+  count: number;
+}
+
 @Injectable()
 export class RankingService {
   constructor(private readonly prisma: PrismaService) {}
 
-  filter(
+  async shiftRank(start_time: number) {
+    const results = await this.prisma.player.groupBy({
+      by: ['nsaid'],
+      where: {
+        result: {
+          startTime: dayjs.unix(start_time).toDate(),
+        },
+      },
+      _count: {
+        _all: true,
+      },
+      _sum: {
+        goldenIkuraNum: true,
+        ikuraNum: true,
+      },
+      _avg: {
+        goldenIkuraNum: true,
+        ikuraNum: true,
+        deadCount: true,
+        helpCount: true,
+      },
+      _max: {
+        goldenIkuraNum: true,
+        ikuraNum: true,
+      },
+      orderBy: {
+        _count: {
+          nsaid: 'desc',
+        },
+      },
+      skip: 0,
+      take: 100,
+    });
+
+    return results.map((result) =>
+      plainToClass(ShiftStatsDto, snakecaseKeys(result))
+    );
+  }
+
+  private filter(
     start_time: number,
     nsaid?: string,
     no_night_waves?: boolean
@@ -51,7 +113,7 @@ export class RankingService {
    * @param arg スケジュールID
    * @return RankDetail
    */
-  async aggregate(
+  private async aggregate(
     start_time: number,
     nsaid?: string,
     no_night?: boolean
@@ -136,7 +198,7 @@ export class RankingService {
    * @param start_time スケジュールID
    * @return UserRankWave
    */
-  async waves(start_time: number): Promise<RankWave> {
+  private async waves(start_time: number): Promise<RankWave> {
     const startTime: Date = dayjs.unix(start_time).toDate();
     const waves = await this.prisma.wave.findMany({
       where: {
@@ -174,7 +236,7 @@ export class RankingService {
    * @param no_night 夜WAVEを含むか
    * @return RankIkura
    */
-  async ikura(
+  private async ikura(
     start_time: number,
     nsaid: string,
     no_night_waves?: boolean
@@ -211,7 +273,7 @@ export class RankingService {
    * @param start_time スケジュールID
    * @return RankBoss[]
    */
-  async ikuras(
+  private async ikuras(
     start_time: number,
     no_night_waves: boolean
   ): Promise<RankResult[]> {
