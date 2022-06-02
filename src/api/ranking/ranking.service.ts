@@ -11,6 +11,8 @@ import {
   RankResult,
   RankWave,
 } from '../dto/rank.response.dto';
+import { NicknameAndIconRequestDto } from '../nickname_and_icon/nickname_and_icon.request';
+import { NicknameAndIconService } from '../nickname_and_icon/nickname_and_icon.service';
 
 enum WaterLevel {
   LOW = 'low',
@@ -47,20 +49,34 @@ export class ShiftStatsDto {
   sum: ShiftStatsParam;
   avg: ShiftStatsParam;
   max: ShiftStatsParam;
+  thumbnail_url: string;
+  nickname: string;
   @Transform((params) => params.value['all'])
   count: number;
 }
 
 @Injectable()
 export class RankingService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly service: NicknameAndIconService
+  ) {}
 
-  async shiftRank(start_time: number) {
+  async shiftRank(start_time?: number) {
+    const schedule = await this.prisma.schedule.findFirst({
+      orderBy: {
+        startTime: 'desc',
+      },
+    });
+
     const results = await this.prisma.player.groupBy({
       by: ['nsaid'],
       where: {
         result: {
-          startTime: dayjs.unix(start_time).toDate(),
+          startTime:
+            start_time == undefined
+              ? schedule.startTime
+              : dayjs.unix(start_time).toDate(),
         },
       },
       _count: {
@@ -89,9 +105,28 @@ export class RankingService {
       take: 100,
     });
 
-    return results.map((result) =>
+    // 型に変換
+    const response = results.map((result) =>
       plainToClass(ShiftStatsDto, snakecaseKeys(result))
     );
+
+    // SplatNet2からデータ取得
+    const request = new NicknameAndIconRequestDto(
+      response.map((result) => result.nsaid)
+    );
+
+    // アイコンと名前を取得
+    const nickname_and_icons = (await this.service.findMany(request))
+      .nickname_and_icons;
+
+    return response.map((user) => {
+      const data = nickname_and_icons.filter(
+        (nickname) => nickname.nsa_id == user.nsaid
+      )[0];
+      user.thumbnail_url = data.thumbnail_url;
+      user.nickname = data.nickname;
+      return user;
+    });
   }
 
   private filter(

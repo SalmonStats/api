@@ -924,6 +924,11 @@
     "@types/connect" "*"
     "@types/node" "*"
 
+"@types/cache-manager@^3.4.3":
+  version "3.4.3"
+  resolved "https://registry.yarnpkg.com/@types/cache-manager/-/cache-manager-3.4.3.tgz#eba99bf795b997ad0c309658101398c34d7faecb"
+  integrity sha512-71aBXoFYXZW4TnDHHH8gExw2lS28BZaWeKefgsiJI7QYZeJfUEbMKw6CQtzGjlYQcGIWwB76hcCrkVA3YHSvsw==
+
 "@types/connect@*":
   version "3.4.35"
   resolved "https://registry.yarnpkg.com/@types/connect/-/connect-3.4.35.tgz#5fcf6ae445e4021d1fc2219a4873cc73a3bb2ad1"
@@ -1510,6 +1515,11 @@ assert@^1.1.1:
     object-assign "^4.1.1"
     util "0.10.3"
 
+async@3.2.3:
+  version "3.2.3"
+  resolved "https://registry.yarnpkg.com/async/-/async-3.2.3.tgz#ac53dafd3f4720ee9e8a160628f18ea91df196c9"
+  integrity sha512-spZRyzKL5l5BZQrr/6m/SqFdBN0q3OCI0f9rjfBzCMBIP4p75P620rR3gTmaksNOhmzgdxcaxdNfMy6anrbM0g==
+
 asynckit@^0.4.0:
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/asynckit/-/asynckit-0.4.0.tgz#c79ed97f7f34cb8f2ba1bc9790bcc366474b4b79"
@@ -1829,6 +1839,15 @@ bytes@3.1.2:
   version "3.1.2"
   resolved "https://registry.yarnpkg.com/bytes/-/bytes-3.1.2.tgz#8b0beeb98605adf1b128fa4386403c009e0221a5"
   integrity sha512-/Nf7TyzTx6S3yRJObOAV7956r8cr2+Oj8AC5dt8wSP3BQAoeX58NoHyCU8P8zGkNXStjTSi6fzO6F0pBdcYbEg==
+
+cache-manager@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/cache-manager/-/cache-manager-4.0.0.tgz#2eee2c2231aedca2bfb088f0fb5d92407df1fa1b"
+  integrity sha512-8HD47K/nObJwRRhPQ11QMgcbPCL9KNQRMc5ggUJUe/QLD6iW0i3UyWp8NcEeFlZSNMwaMG4gZfdn3Sn4syP+zA==
+  dependencies:
+    async "3.2.3"
+    lodash.clonedeep "^4.5.0"
+    lru-cache "^7.10.1"
 
 call-bind@^1.0.0:
   version "1.0.2"
@@ -4056,6 +4075,11 @@ locate-path@^5.0.0:
   dependencies:
     p-locate "^4.1.0"
 
+lodash.clonedeep@^4.5.0:
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/lodash.clonedeep/-/lodash.clonedeep-4.5.0.tgz#e23f3f9c4f8fbdde872529c1071857a086e5ccef"
+  integrity sha512-H5ZhCF25riFd9uB5UCkVKo61m3S/xZk1x4wA6yp/L3RFP6Z/eHH1ymQcGLo7J3GMPfm0V/7m1tryHuGVxpqEBQ==
+
 lodash.isequal@^4.5.0:
   version "4.5.0"
   resolved "https://registry.yarnpkg.com/lodash.isequal/-/lodash.isequal-4.5.0.tgz#415c4478f2bcc30120c22ce10ed3226f7d3e18e0"
@@ -4109,6 +4133,11 @@ lru-cache@^6.0.0:
   integrity sha512-Jo6dJ04CmSjuznwJSS3pUeWmd/H0ffTlkXXgwZi+eq1UCmqQwCh+eLsYOYCwY991i2Fah4h1BEMCx4qThGbsiA==
   dependencies:
     yallist "^4.0.0"
+
+lru-cache@^7.10.1:
+  version "7.10.1"
+  resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-7.10.1.tgz#db577f42a94c168f676b638d15da8fb073448cab"
+  integrity sha512-BQuhQxPuRl79J5zSXRP+uNzPOyZw2oFI9JLRQ80XswSvg21KMKNtQza9eF42rfI/3Z40RvzBdXgziEkudzjo8A==
 
 lunr@^2.3.9:
   version "2.3.9"

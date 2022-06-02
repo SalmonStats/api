@@ -85,6 +85,34 @@ paths:
           description: ''
       tags:
         - 統計
+  /v1/nickname_and_icon:
+    get:
+      operationId: アイコン取得
+      summary: ''
+      parameters:
+        - name: id
+          required: true
+          in: query
+          example:
+            - 3f89c3791c43ea57
+            - 8db26d4c24ee37fd
+            - 7690d838ab4db5d2
+            - f28328d99d9dba3c
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NicknameAndIconResponseDto'
+        '403':
+          description: ''
+      tags:
+        - ユーザー
   /v1/results/{salmon_id}:
     get:
       operationId: 取得
@@ -245,6 +273,17 @@ paths:
           description: ''
       tags:
         - リザルト
+  /v1/ranks:
+    get:
+      operationId: 最新の各種ランキング取得
+      summary: ''
+      description: シフトごとのいろんな記録を取得
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: &ref_0
+        - ランキング
   /v1/ranks/{start_time}:
     get:
       operationId: 各種ランキング取得
@@ -259,8 +298,7 @@ paths:
       responses:
         '200':
           description: ''
-      tags: &ref_0
-        - ランキング
+      tags: *ref_0
   /v1/ranks/{start_time}/users:
     get:
       operationId: ユーザランキング取得
@@ -442,6 +480,28 @@ components:
         - waves
         - total
         - single
+    NicknameAndIcon:
+      type: object
+      properties:
+        nickname:
+          type: string
+        nsa_id:
+          type: string
+        thumbnail_url:
+          type: string
+      required:
+        - nickname
+        - nsa_id
+        - thumbnail_url
+    NicknameAndIconResponseDto:
+      type: object
+      properties:
+        nickname_and_icons:
+          type: array
+          items:
+            $ref: '#/components/schemas/NicknameAndIcon'
+      required:
+        - nickname_and_icons
     PaginatedDto:
       type: object
       properties:

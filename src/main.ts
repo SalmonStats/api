@@ -14,6 +14,9 @@ async function bootstrap() {
   app.enableCors({
     origin: '*',
     allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept',
+    maxAge: 600,
+    preflightContinue: true,
+    optionsSuccessStatus: 200,
   });
   app.enableVersioning({
     type: VersioningType.URI,

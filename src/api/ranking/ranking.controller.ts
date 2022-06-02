@@ -1,4 +1,13 @@
-import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
+import {
+  CacheInterceptor,
+  CacheTTL,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Query,
+  UseInterceptors,
+} from '@nestjs/common';
 import {
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -7,7 +16,7 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
-import { Rank, RankResult } from '../dto/rank.response.dto';
+import { Rank } from '../dto/rank.response.dto';
 import { RankingService } from './ranking.service';
 
 @ApiTags('ランキング')
@@ -15,11 +24,21 @@ import { RankingService } from './ranking.service';
 export class RankingController {
   constructor(private readonly service: RankingService) {}
 
+  @Get('')
+  @ApiOperation({
+    operationId: '最新の各種ランキング取得',
+    description: 'シフトごとのいろんな記録を取得',
+  })
+  findLatestShiftRank() {
+    return this.service.shiftRank(null);
+  }
+
   @Get(':start_time')
   @ApiOperation({
     operationId: '各種ランキング取得',
     description: 'シフトごとのいろんな記録を取得',
   })
+  @ApiParam({ name: 'start_time' })
   findShiftRank(@Param('start_time', ParseIntPipe) start_time: number) {
     return this.service.shiftRank(start_time);
   }

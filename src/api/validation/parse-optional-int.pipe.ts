@@ -56,7 +56,7 @@ export class ParseOptionalIntPipe implements PipeTransform<string> {
         return undefined;
       }
       throw this.exceptionFactory(
-        `Validation failed (${metadata.data} is expected numeric string)`,
+        `Validation failed (${metadata.data} is expected numeric string)`
       );
     }
     return parseInt(value, 10);
