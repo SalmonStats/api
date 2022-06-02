@@ -8,6 +8,7 @@ import { plainToClass } from 'class-transformer';
 import { NicknameAndIconRequestDto } from './nickname_and_icon.request';
 import { NicknameAndIconResponseDto } from './nickname_and_icon.response';
 import { HttpService } from '@nestjs/axios';
+import { lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class NicknameAndIconService {
@@ -23,7 +24,7 @@ export class NicknameAndIconService {
         cookie: `iksm_session=${process.env.TOKEN}`,
       },
     };
-    const response = await fetch(url, options);
+    const response = await lastValueFrom(this.axios.get(url, options))
 
     switch (response.status) {
       case 400:
@@ -33,7 +34,7 @@ export class NicknameAndIconService {
       case 403:
         throw new ForbiddenException();
       default:
-        return plainToClass(NicknameAndIconResponseDto, await response.json());
+        return plainToClass(NicknameAndIconResponseDto, await response.data);
     }
   }
 }
