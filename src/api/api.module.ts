@@ -13,6 +13,7 @@ import { StatsModule } from './stats/stats.module';
 import { StatsService } from './stats/stats.service';
 import { NicknameAndIconController } from './nickname_and_icon/nickname_and_icon.controller';
 import { NicknameAndIconService } from './nickname_and_icon/nickname_and_icon.service';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   controllers: [
@@ -34,6 +35,7 @@ import { NicknameAndIconService } from './nickname_and_icon/nickname_and_icon.se
     UsersModule,
     SchedulesModule,
     StatsModule,
+    HttpModule
   ],
 })
 export class ApiModule {}

@@ -7,10 +7,12 @@ import {
 import { plainToClass } from 'class-transformer';
 import { NicknameAndIconRequestDto } from './nickname_and_icon.request';
 import { NicknameAndIconResponseDto } from './nickname_and_icon.response';
-import fetch from 'node-fetch';
+import { HttpService } from '@nestjs/axios';
 
 @Injectable()
 export class NicknameAndIconService {
+  constructor(private readonly axios: HttpService) { }
+
   async findMany(
     request: NicknameAndIconRequestDto
   ): Promise<NicknameAndIconResponseDto> {
