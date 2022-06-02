@@ -12,6 +12,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -26,6 +27,7 @@ export class UsersController {
   @ApiTags('ユーザー')
   @ApiOperation({ operationId: '一覧取得' })
   @ApiOkResponse()
+  @ApiQuery({ name: 'nickname', type: String, example: 'みなかみはちみ' })
   findMany(
     @Query(new ValidationPipe({ transform: true }))
     query: PaginatedRequestDtoForUser

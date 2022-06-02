@@ -23,8 +23,9 @@ paths:
             default: 25
             type: number
         - name: nickname
-          required: false
+          required: true
           in: query
+          example: みなかみはちみ
           schema:
             type: string
       responses:
