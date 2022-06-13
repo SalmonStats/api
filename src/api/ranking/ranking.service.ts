@@ -95,6 +95,7 @@ export class RankingService {
       _max: {
         goldenIkuraNum: true,
         ikuraNum: true,
+        gradePoint: true
       },
       orderBy: {
         _count: {
@@ -102,7 +103,7 @@ export class RankingService {
         },
       },
       skip: 0,
-      take: 100,
+      take: 50,
     });
 
     // 型に変換

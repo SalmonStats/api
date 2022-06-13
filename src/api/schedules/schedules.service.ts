@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma, Result } from '@prisma/client';
+import { Prisma, Result, Schedule } from '@prisma/client';
 import { plainToClass } from 'class-transformer';
 import dayjs from 'dayjs';
 import snakecaseKeys from 'snakecase-keys';
@@ -112,7 +112,13 @@ export class SchedulesService {
     });
   }
 
-  async find(): Promise<void> {}
+  async findMany(): Promise<any[]> {
+    return (await this.prisma.schedule.findMany({
+      orderBy: {
+        startTime: "desc"
+      }
+    })).map(schedule => snakecaseKeys(schedule))
+  }
 
   async create() {}
 }

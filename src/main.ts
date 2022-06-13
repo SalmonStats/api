@@ -13,9 +13,9 @@ async function bootstrap() {
   app.use(bodyParser.json({ limit: '1mb' }));
   app.enableCors({
     origin: '*',
-    allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept',
-    maxAge: 600,
-    preflightContinue: true,
+    maxAge: 3600,
+    credentials: false,
+    preflightContinue: false,
     optionsSuccessStatus: 200,
   });
   app.enableVersioning({
@@ -43,6 +43,6 @@ async function bootstrap() {
     exec(`npx redoc-cli build ${output}.json -o ${output}.html`);
   }
   SwaggerModule.setup('documents', app, documents);
-  await app.listen(3000);
+  await app.listen(process.env.NODE_PORT || 3000);
 }
 bootstrap();
