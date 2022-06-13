@@ -13,7 +13,7 @@ async function bootstrap() {
   app.use(bodyParser.json({ limit: '1mb' }));
   app.enableCors({
     origin: '*',
-    maxAge: 3600,
+    maxAge: 600,
     credentials: false,
     preflightContinue: false,
     optionsSuccessStatus: 200,

@@ -103,7 +103,7 @@ export class RankingService {
         },
       },
       skip: 0,
-      take: 50,
+      take: 100,
     });
 
     // 型に変換
