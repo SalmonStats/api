@@ -2,6 +2,7 @@ import { Prisma } from '.prisma/client';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { plainToClass, Transform } from 'class-transformer';
 import dayjs from 'dayjs';
+import { start } from 'repl';
 import snakecaseKeys from 'snakecase-keys';
 import { PrismaService } from 'src/prisma.service';
 import {
@@ -11,6 +12,7 @@ import {
   RankResult,
   RankWave,
 } from '../dto/rank.response.dto';
+import { Player } from '../dto/result.response.dto';
 import { NicknameAndIconRequestDto } from '../nickname_and_icon/nickname_and_icon.request';
 import { NicknameAndIconService } from '../nickname_and_icon/nickname_and_icon.service';
 
@@ -53,6 +55,7 @@ export class ShiftStatsDto {
   nickname: string;
   @Transform((params) => params.value['all'])
   count: number;
+  fastest999Time?: number;
 }
 
 @Injectable()
@@ -111,6 +114,32 @@ export class RankingService {
       plainToClass(ShiftStatsDto, snakecaseKeys(result))
     );
 
+    // 最速カンスト時間ランキングを取得
+    const grade = await this.prisma.player.findMany({
+      where: {
+        gradePoint: {
+          equals: 999,
+        },
+        result: {
+          startTime:
+            start_time == undefined
+              ? schedule.startTime
+              : dayjs.unix(start_time).toDate(),
+        },
+      },
+      orderBy: {
+        result: {
+          playTime: "asc"
+        }
+      },
+      select: {
+        nsaid: true,
+        name: true,
+        result: true
+      },
+      distinct: ["nsaid"]
+    });
+
     // SplatNet2からデータ取得
     const request = new NicknameAndIconRequestDto(
       response.map((result) => result.nsaid)
@@ -120,12 +149,17 @@ export class RankingService {
     const nickname_and_icons = (await this.service.findMany(request))
       .nickname_and_icons;
 
+    const startTime: number = dayjs(start_time ?? schedule.startTime).unix();
+    // データを返す
     return response.map((user) => {
       const data = nickname_and_icons.filter(
         (nickname) => nickname.nsa_id == user.nsaid
       )[0];
+      const rank = grade.filter((grade) => grade.nsaid == user.nsaid)[0];
       user.thumbnail_url = data.thumbnail_url;
       user.nickname = data.nickname;
+      user.fastest999Time =
+        rank == null ? null : dayjs(rank.result.playTime).unix() - startTime;
       return user;
     });
   }
