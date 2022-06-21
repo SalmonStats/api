@@ -51,7 +51,7 @@ paths:
           description: ''
       tags:
         - ユーザー
-  /v1/stats:
+  /v1/stats/{start_time}:
     get:
       operationId: 統計取得
       summary: ''
@@ -60,12 +60,14 @@ paths:
           required: true
           in: query
           description: プレイヤーID
+          example: 91d160aa84e88da6
           schema:
             type: string
         - name: start_time
           required: true
-          in: query
+          in: path
           description: スケジュールID
+          example: 1655575200
           schema:
             type: number
         - name: is_clear
@@ -372,9 +374,21 @@ paths:
           description: ''
       tags:
         - スケジュール
+  /v1/schedules/{start_time}:
+    get:
+      operationId: 統計取得
+      summary: ''
+      description: スケジュールのリザルト統計を取得します
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags:
+        - スケジュール
 info:
   title: Salmon Stats API Documents
   description: ''
+  version: 1.0.3.8
   contact: {}
 tags: []
 servers: []

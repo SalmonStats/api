@@ -19,11 +19,11 @@ export class StatsService {
   async single(
     start_time: number,
     is_clear?: boolean,
-    nsaid?: string,
-    type?: StatsType
+    nsaid: string = null,
+    type: StatsType = null
   ) {
     // nsaid未指定かつtypeが指定されていれば計算不可なのでundefinedを返す
-    if (nsaid === undefined) {
+    if (nsaid === null) {
       return undefined;
     }
     const startTime: Date = dayjs.unix(start_time).toDate();

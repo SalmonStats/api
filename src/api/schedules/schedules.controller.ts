@@ -16,6 +16,16 @@ export class SchedulesController {
   findMany(): Promise<any[]> { 
     return this.service.findMany();
   }
+  
+  @Get(':start_time')
+  @ApiTags('スケジュール')
+  @ApiOperation({
+    operationId: '統計取得',
+    description: 'スケジュールのリザルト統計を取得します',
+  })
+  find(): Promise<number> { 
+    return this.service.find(0);
+  }
 
   @Post('')
   @ApiTags('スケジュール')
