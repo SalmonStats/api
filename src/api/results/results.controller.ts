@@ -106,7 +106,7 @@ export class ResultsController {
         salmonId: query.order ? 'asc' : 'desc',
       },
       include: {
-        players: true,
+        players: query.include_details,
         jobResult: true,
         waves: true,
         schedule: true,

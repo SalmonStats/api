@@ -52,12 +52,28 @@ export class PaginatedRequestDtoForUser extends PaginatedRequestDto {
 }
 
 export class PaginatedRequestDtoForResult extends PaginatedRequestDto {
+  @ApiProperty({
+    title: '',
+    description: '詳細データを含むかどうか',
+    default: false
+  })
+  @Expose()
+  @Transform((params) => {
+    if (params.value === undefined) {
+      return undefined;
+    }
+    return params.value === 'true';
+  })
+  @IsOptional()
+  @IsBoolean()
+  readonly include_details: boolean;
+  
   @Expose()
   @Transform((params) => params.value === 'true')
   @IsBoolean()
-  @ApiPropertyOptional({
+  @ApiProperty({
     title: 'order',
-    default: null,
+    default: true,
   })
   readonly order: boolean;
 

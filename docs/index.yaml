@@ -189,12 +189,20 @@ paths:
             title: limit
             default: 25
             type: number
+        - name: include_details
+          required: true
+          in: query
+          description: 詳細データを含むかどうか
+          schema:
+            title: ''
+            default: false
+            type: boolean
         - name: order
-          required: false
+          required: true
           in: query
           schema:
             title: order
-            default: null
+            default: true
             type: boolean
         - name: start_time
           required: false
@@ -388,7 +396,6 @@ paths:
 info:
   title: Salmon Stats API Documents
   description: ''
-  version: 1.0.3.8
   contact: {}
 tags: []
 servers: []
