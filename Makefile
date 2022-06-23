@@ -2,11 +2,11 @@ include .env
 
 .PHONY: dev
 dev:
-	NODE_ENV=development yarn start:dev
+	yarn start:dev
 
 .PHONY: prod
 prod:
-	NODE_ENV=production yarn start:dev
+	yarn start:prod
 
 .PHONY: init
 init:
@@ -19,3 +19,12 @@ build:
 .PHONY: push
 push:
 	docker push tkgling/salmon-stats-app:${API_VER}
+
+.PHONY: db
+db:
+	docker run --rm \
+	-p 5432:5432 \
+	-e POSTGRES_USER=tkgstrator \
+	-e POSTGRES_PASSWORD=123456 \
+	-e POSTGRES_DB=sp2dev \
+	postgres:14.4 

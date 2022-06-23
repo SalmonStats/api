@@ -70,6 +70,34 @@ class TotalResultDto {
   player?: IkuraStats[];
 }
 
+class JobResult {
+  is_clear: {
+    count: number;
+  };
+  is_failure: {
+    count: number;
+    failure_reason: {
+      wipe_out: number[],
+      time_limit: number[]
+    };
+  };
+  golden_ikura_num: {
+    avg: number;
+    sum: number;
+    sd: number;
+  };
+  ikura_num: {
+    avg: number;
+    sum: number;
+    sd: number;
+  };
+}
+
+export class LegacyStatsDto {
+  job_result: JobResult
+  boss_counts: {appearances: number, defeated: number}[]
+}
+
 export class StatsResultsDto {
   @ApiProperty({ type: TotalResultDto, description: 'WAVE記録(チーム単位)' })
   @Type(() => TotalResultDto)
@@ -85,4 +113,11 @@ export class StatsResultsDto {
   })
   @Type(() => SingleResultDto)
   single: SingleResultDto;
+
+  @ApiProperty({
+    type: LegacyStatsDto,
+    description: '総合統計(旧Stats統計)',
+  })
+  @Type(() => LegacyStatsDto)
+  stats: LegacyStatsDto;
 }

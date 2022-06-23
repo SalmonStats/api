@@ -481,6 +481,9 @@ components:
             - $ref: '#/components/schemas/IkuraStats'
       required:
         - global
+    LegacyStatsDto:
+      type: object
+      properties: {}
     StatsResultsDto:
       type: object
       properties:
@@ -496,10 +499,15 @@ components:
           description: 個人記録(プレイヤー単位)
           allOf:
             - $ref: '#/components/schemas/SingleResultDto'
+        stats:
+          description: 総合統計(旧Stats統計)
+          allOf:
+            - $ref: '#/components/schemas/LegacyStatsDto'
       required:
         - waves
         - total
         - single
+        - stats
     NicknameAndIcon:
       type: object
       properties:

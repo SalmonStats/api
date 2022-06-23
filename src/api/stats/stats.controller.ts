@@ -81,6 +81,8 @@ export class StatsController {
       global: await this.service.wave(start_time, is_clear, null),
       player: await this.service.wave(start_time, is_clear, nsaid),
     };
+
+    response.stats = await this.service.stats(start_time)
     return response;
   }
 }
