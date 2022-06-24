@@ -239,7 +239,7 @@ export class StatsService {
       COUNT(failure_wave=2 AND failure_reason='wipe_out' OR null) is_failure_wave2_wipe_out,
       COUNT(failure_wave=2 AND failure_reason='time_limit' OR null) is_failure_wave2_time_limit,
       COUNT(failure_wave=3 AND failure_reason='wipe_out' OR null) is_failure_wave3_wipe_out,
-      COUNT(failure_wave=4 AND failure_reason='time_limit' OR null) is_failure_wave3_time_limit,
+      COUNT(failure_wave=3 AND failure_reason='time_limit' OR null) is_failure_wave3_time_limit,
       SUM(boss_counts[1]) as boss_counts_3,
       SUM(boss_counts[2]) as boss_counts_6,
       SUM(boss_counts[3]) as boss_counts_9,
