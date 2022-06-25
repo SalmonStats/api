@@ -14,6 +14,12 @@ import { StatsService } from './stats/stats.service';
 import { NicknameAndIconController } from './nickname_and_icon/nickname_and_icon.controller';
 import { NicknameAndIconService } from './nickname_and_icon/nickname_and_icon.service';
 import { HttpModule } from '@nestjs/axios';
+import { WavesController } from './waves/waves.controller';
+import { WavesModule } from './waves/waves.module';
+import { WavesService } from './waves/waves.service';
+import { VersionsService } from './versions/versions.service';
+import { VersionsController } from './versions/versions.controller';
+import { VersionsModule } from './versions/versions.module';
 
 @Module({
   controllers: [
@@ -21,13 +27,17 @@ import { HttpModule } from '@nestjs/axios';
     UsersController,
     StatsController,
     NicknameAndIconController,
+    WavesController,
+    VersionsController,
   ],
   providers: [
     ApiService,
     PrismaService,
     UsersService,
     StatsService,
+    WavesService,
     NicknameAndIconService,
+    VersionsService,
   ],
   imports: [
     ResultsModule,
@@ -35,7 +45,9 @@ import { HttpModule } from '@nestjs/axios';
     UsersModule,
     SchedulesModule,
     StatsModule,
-    HttpModule
+    HttpModule,
+    WavesModule,
+    VersionsModule
   ],
 })
 export class ApiModule {}

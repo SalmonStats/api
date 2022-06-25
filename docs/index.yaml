@@ -115,6 +115,31 @@ paths:
           description: ''
       tags:
         - ユーザー
+  /v1/waves:
+    get:
+      operationId: WAVE記録取得
+      summary: ''
+      parameters:
+        - name: start_time
+          required: true
+          in: query
+          schema:
+            type: number
+        - name: event_type
+          required: true
+          in: query
+          schema:
+            type: number
+        - name: water_level
+          required: true
+          in: query
+          schema:
+            type: number
+      responses:
+        '200':
+          description: ''
+      tags:
+        - WAVE記録
   /v1/results/{salmon_id}:
     get:
       operationId: 取得

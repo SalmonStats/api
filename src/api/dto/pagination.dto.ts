@@ -18,6 +18,7 @@ import {
   IsInt,
   IsOptional,
   IsString,
+  Max,
   Min,
 } from 'class-validator';
 import dayjs from 'dayjs';
@@ -51,11 +52,44 @@ export class PaginatedRequestDtoForUser extends PaginatedRequestDto {
   nickname: string;
 }
 
+export class PaginatedRequestDtoForWave extends PaginatedRequestDto {
+  @ApiProperty({
+    title: '',
+    description: 'イベントID',
+    default: 0,
+    example: 0,
+  })
+  @IsInt()
+  @Max(6)
+  @Min(0)
+  event_type: number;
+
+  @ApiProperty({
+    title: '',
+    description: '潮位ID',
+    default: 0,
+    example: 0,
+  })
+  @IsInt()
+  @Max(2)
+  @Min(0)
+  water_level: number;
+
+  @ApiProperty({
+    title: '',
+    description: 'スケジュールID',
+    default: 0,
+    example: 1655899200
+  })
+  @IsInt()
+  start_time: number;
+}
+
 export class PaginatedRequestDtoForResult extends PaginatedRequestDto {
   @ApiProperty({
     title: '',
     description: '詳細データを含むかどうか',
-    default: false
+    default: false,
   })
   @Expose()
   @Transform((params) => {
@@ -67,7 +101,7 @@ export class PaginatedRequestDtoForResult extends PaginatedRequestDto {
   @IsOptional()
   @IsBoolean()
   readonly include_details: boolean;
-  
+
   @Expose()
   @Transform((params) => params.value === 'true')
   @IsBoolean()
