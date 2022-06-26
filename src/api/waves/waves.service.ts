@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaPromise } from '@prisma/client';
+import dayjs from 'dayjs';
 import { PrismaService } from 'src/prisma.service';
 
 export interface TotalResponse {
-  total: Total[][]
-  waves: Total[][][]
+  total: Total[][];
+  waves: Total[][][];
+  weapons?: SuppliedWeapon[]
 }
 
 export interface Total {
@@ -16,6 +18,14 @@ export interface Total {
   members: string[];
 }
 
+export interface SuppliedWeapon {
+  rank: number
+  waves: number
+  supplied_count: number
+  nsaid: string
+  name: string
+}
+
 @Injectable()
 export class WavesService {
   constructor(private readonly prisma: PrismaService) {}
@@ -25,7 +35,7 @@ export class WavesService {
     water_level: number,
     event_type: number,
     limit: number
-  ) : PrismaPromise<Total[]>{
+  ): PrismaPromise<Total[]> {
     return this.prisma.$queryRaw<Total[]>`
       WITH results AS (
         SELECT 
@@ -91,7 +101,12 @@ export class WavesService {
     `;
   }
 
-  queryBuilderTotal(start_time: number, nightLess: boolean, limit: number, threshold: number): PrismaPromise<Total[]> {
+  queryBuilderTotal(
+    start_time: number,
+    nightLess: boolean,
+    limit: number,
+    threshold: number
+  ): PrismaPromise<Total[]> {
     return this.prisma.$queryRaw<Total[]>`
       WITH results AS (
         SELECT 
@@ -152,13 +167,55 @@ export class WavesService {
     `;
   }
 
-  async findWaves(
-    startTime: number,
-  ): Promise<TotalResponse> {
+  queryBuilderWeapons(
+    start_time: number,
+    limit: number
+  ): PrismaPromise<SuppliedWeapon[]> {
+    return this.prisma.$queryRaw`
+    WITH results AS (
+	    SELECT
+	    RANK() OVER(ORDER BY CARDINALITY(ARRAY_AGG(DISTINCT weapon_lists)) DESC)::INT,
+	    COUNT(name)::INT AS waves,
+	    CARDINALITY(ARRAY_AGG(DISTINCT weapon_lists)) supplied_count,
+	    nsaid,
+	    MIN(name) AS name
+	    FROM (
+	    	SELECT
+	    	*
+	    	FROM
+	    	players
+	    	INNER JOIN
+	    	results
+	    	ON
+	    	players."resultId" = results.salmon_id
+	    ) AS results,
+	    UNNEST(weapon_list) AS weapon_lists
+	    WHERE
+	    results.start_time = TO_TIMESTAMP(${start_time})
+	    GROUP BY nsaid
+	    LIMIT ${limit}
+    )
+  SELECT
+  *
+  FROM
+  results
+  `;
+  }
+  async findWaves(startTime: number): Promise<TotalResponse> {
+    // スケジュールを取得し、なければエラーを返す
+    const schedule = await this.prisma.schedule.findUnique({
+      where: {
+        startTime: dayjs.unix(startTime).toDate(),
+      },
+      rejectOnNotFound: true
+    })
+
+    const weapons: SuppliedWeapon[] = schedule.weaponList.includes(-1) ? await this.queryBuilderWeapons(startTime, 100) : undefined
+
     const total: Total[][] = await this.prisma.$transaction([
       this.queryBuilderTotal(startTime, false, 100, 130),
       this.queryBuilderTotal(startTime, true, 100, 120),
-    ])
+    ]);
 
     const waves: Total[][] = await this.prisma.$transaction([
       this.queryBuilder(startTime, 0, 0, 100),
@@ -180,39 +237,13 @@ export class WavesService {
     ]);
 
     return {
-      total: [
-        total[0],
-        total[1]
-      ],
+      total: [total[0], total[1]],
       waves: [
-        [
-          waves[0],
-          null,
-          null,
-          null,
-          waves[11],
-          waves[14],
-          waves[15],
-        ],
-        [
-          waves[1],
-          waves[3],
-          waves[5],
-          waves[7],
-          waves[10],
-          waves[13],
-          null
-        ],
-        [
-          waves[2],
-          waves[4],
-          waves[6],
-          waves[8],
-          waves[9],
-          waves[12],
-          null
-        ],
-      ]
+        [waves[0], null, null, null, waves[11], waves[14], waves[15]],
+        [waves[1], waves[3], waves[5], waves[7], waves[10], waves[13], null],
+        [waves[2], waves[4], waves[6], waves[8], waves[9], waves[12], null],
+      ],
+      weapons: weapons
     };
   }
 }
