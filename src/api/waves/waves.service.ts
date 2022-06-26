@@ -27,51 +27,67 @@ export class WavesService {
     limit: number
   ) : PrismaPromise<Total[]>{
     return this.prisma.$queryRaw<Total[]>`
-    WITH waves AS (
-      SELECT
-        water_level,
-        event_type,
-        golden_ikura_num,
-        RANK() OVER(ORDER BY golden_ikura_num DESC)::INT,
-        ARRAY_AGG(name) AS names,
-        members
-      FROM (
-        SELECT
-          waves.id,
-          waves.golden_ikura_num,
-          waves.event_type,
-          waves.water_level,
-          players.name,
-          players.nsaid,
-          results.start_time,
-          results.members
-        FROM (
-          SELECT
-            *
-          FROM waves
-          WHERE
-            event_type = ${event_type}
-            AND water_level = ${water_level}
-            AND is_clear = true
-          ) AS waves
-          INNER JOIN players ON waves."resultId" = players."resultId"
-          INNER JOIN results ON waves."resultId" = results.salmon_id
-        WHERE
-          start_time = TO_TIMESTAMP(${start_time})
-      ) AS waves
-      GROUP BY
-        start_time,
-        event_type,
-        water_level,
-        golden_ikura_num,
-        members
-      ORDER BY golden_ikura_num DESC
-      LIMIT ${limit}
-    )
-    SELECT
-      *
-    FROM
-      waves;
+      WITH results AS (
+        SELECT 
+          MAX(golden_ikura_num) AS golden_ikura_num, 
+          RANK() OVER(
+            ORDER BY 
+              MAX(golden_ikura_num) DESC
+          ):: INT, 
+          members, 
+          names 
+        FROM 
+          (
+            SELECT 
+              results.salmon_id, 
+              waves.golden_ikura_num, 
+              waves.event_type, 
+              waves.water_level, 
+              results.members, 
+              (
+                SELECT 
+                  ARRAY_AGG(name) 
+                FROM 
+                  (
+                    SELECT 
+                      UNNEST(
+                        ARRAY_AGG(players.name)
+                      ) AS name 
+                    ORDER BY 
+                      name
+                  ) AS name
+              ) AS names 
+            FROM 
+              waves 
+              INNER JOIN players ON waves."resultId" = players."resultId" 
+              INNER JOIN results ON waves."resultId" = results.salmon_id 
+            WHERE 
+              results.start_time = TO_TIMESTAMP(${start_time}) 
+              AND waves.event_type = ${event_type}
+              AND waves.water_level = ${water_level}
+              AND waves.golden_ikura_num >= 40
+            GROUP BY 
+              results.salmon_id, 
+              waves.wave_id, 
+              waves.golden_ikura_num, 
+              waves.event_type, 
+              waves.water_level, 
+              results.members 
+            ORDER BY 
+              results.golden_ikura_num DESC
+          ) AS results 
+        GROUP BY 
+          results.event_type, 
+          results.water_level, 
+          results.members, 
+          results.names 
+        LIMIT 
+          ${limit}
+      ) 
+      SELECT 
+        * 
+      FROM 
+        results;
     `;
   }
 
@@ -79,7 +95,7 @@ export class WavesService {
     return this.prisma.$queryRaw<Total[]>`
       WITH results AS (
         SELECT 
-          MAX(golden_ikura_num), 
+          MAX(golden_ikura_num) AS golden_ikura_num, 
           RANK() OVER(
             ORDER BY 
               MAX(golden_ikura_num) DESC
