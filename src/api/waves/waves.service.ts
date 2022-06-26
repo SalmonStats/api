@@ -1,35 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaPromise } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
 
 export interface TotalResponse {
-  total: {
-    night: Total[];
-    nightless: Total[];
-  };
-  waves: {
-    high_tide: {
-      water_levels: Total[];
-      rush: Total[];
-      'goldie-seeking': Total[];
-      griller: Total[];
-      "the-mothership": Total[];
-      fog: Total[];
-    };
-    normal_tide: {
-      water_levels: Total[];
-      rush: Total[];
-      'goldie-seeking': Total[];
-      griller: Total[];
-      "the-mothership": Total[];
-      fog: Total[];
-    };
-    low_tide: {
-      water_levels: Total[];
-      fog: Total[];
-      "the-mothership": Total[];
-      'cohock-charge': Total[];
-    };
-  };
+  total: Total[][]
+  waves: Total[][][]
 }
 
 export interface Total {
@@ -45,56 +20,151 @@ export interface Total {
 export class WavesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findWaves(startTime: number, goldenIkuraNum: number): Promise<TotalResponse> {
-    const total = await this.prisma.$queryRaw<Total[]>`
-      (SELECT false as nightless, MAX(golden_ikura_num) AS golden_ikura_num, (RANK() OVER(ORDER BY MAX(golden_ikura_num) DESC)::INT), members
-        FROM results
-        WHERE no_night_waves = false
-        AND start_time = TO_TIMESTAMP(${startTime})
-        AND golden_ikura_num >= ${goldenIkuraNum}
-        GROUP BY no_night_waves, members
-        ORDER BY MAX(golden_ikura_num) DESC
-        LIMIT 100)
-      UNION ALL
-      (SELECT true as nightless, MAX(golden_ikura_num) AS golden_ikura_num, (RANK() OVER(ORDER BY MAX(golden_ikura_num) DESC)::INT), members
-	      FROM results
-	      WHERE no_night_waves = true
-	      AND start_time = TO_TIMESTAMP(${startTime})
-	      AND golden_ikura_num >= ${goldenIkuraNum}
-	      GROUP BY no_night_waves, members
-	      ORDER BY MAX(golden_ikura_num) DESC
-        LIMIT 100)
+  queryBuilder(
+    start_time: number,
+    water_level: number,
+    event_type: number,
+    limit: number
+  ) : PrismaPromise<Total[]>{
+    return this.prisma.$queryRaw<Total[]>`
+    WITH waves AS (
+      SELECT
+        water_level,
+        event_type,
+        golden_ikura_num,
+        RANK() OVER(ORDER BY golden_ikura_num DESC)::INT,
+        ARRAY_AGG(name) AS names,
+        members
+      FROM (
+        SELECT
+          waves.id,
+          waves.golden_ikura_num,
+          waves.event_type,
+          waves.water_level,
+          players.name,
+          players.nsaid,
+          results.start_time,
+          results.members
+        FROM (
+          SELECT
+            *
+          FROM waves
+          WHERE
+            event_type = ${event_type}
+            AND water_level = ${water_level}
+            AND is_clear = true
+          ) AS waves
+          INNER JOIN players ON waves."resultId" = players."resultId"
+          INNER JOIN results ON waves."resultId" = results.salmon_id
+        WHERE
+          start_time = TO_TIMESTAMP(${start_time})
+      ) AS waves
+      GROUP BY
+        start_time,
+        event_type,
+        water_level,
+        golden_ikura_num,
+        members
+      ORDER BY golden_ikura_num DESC
+      LIMIT ${limit}
+    )
+    SELECT
+      *
+    FROM
+      waves;
     `;
+  }
+
+  queryBuilderTotal(start_time: number, nightLess: boolean, limit: number, threshold: number): PrismaPromise<Total[]> {
+    return this.prisma.$queryRaw<Total[]>`
+    WITH waves AS (
+      SELECT
+        *,
+        RANK() OVER(ORDER BY golden_ikura_num DESC)::INT
+      FROM (
+        SELECT
+          MAX(results.golden_ikura_num) AS golden_ikura_num,
+          no_night_waves,
+          results.members,
+          ARRAY_AGG(players.name) as names
+        FROM
+          results
+          INNER JOIN players ON results.salmon_id = players."resultId"
+        WHERE
+          start_time = TO_TIMESTAMP(${start_time})
+          AND no_night_waves = ${nightLess}
+        GROUP BY results.members, results.salmon_id
+        ) AS waves
+      LIMIT ${limit}
+    )
+    SELECT
+      *
+    FROM
+      waves;
+    `;
+  }
+
+  async findWaves(
+    startTime: number,
+  ): Promise<TotalResponse> {
+    const total: Total[][] = await this.prisma.$transaction([
+      this.queryBuilderTotal(startTime, false, 100, 130),
+      this.queryBuilderTotal(startTime, true, 100, 120),
+    ])
+
+    const waves: Total[][] = await this.prisma.$transaction([
+      this.queryBuilder(startTime, 0, 0, 100),
+      this.queryBuilder(startTime, 1, 0, 100),
+      this.queryBuilder(startTime, 2, 0, 100),
+      this.queryBuilder(startTime, 1, 1, 25),
+      this.queryBuilder(startTime, 2, 1, 25),
+      this.queryBuilder(startTime, 1, 2, 25),
+      this.queryBuilder(startTime, 2, 2, 25),
+      this.queryBuilder(startTime, 1, 3, 25),
+      this.queryBuilder(startTime, 2, 3, 25),
+      this.queryBuilder(startTime, 0, 4, 25),
+      this.queryBuilder(startTime, 1, 4, 25),
+      this.queryBuilder(startTime, 2, 4, 25),
+      this.queryBuilder(startTime, 0, 5, 25),
+      this.queryBuilder(startTime, 1, 5, 25),
+      this.queryBuilder(startTime, 2, 5, 25),
+      this.queryBuilder(startTime, 0, 6, 25),
+    ]);
 
     return {
-      total: {
-        night: total.filter(t => t.nightless === false),
-        nightless: total.filter(t => t.nightless === true),
-      },
-      waves: {
-        high_tide: {
-          water_levels: [],
-          rush: [],
-          "goldie-seeking": [],
-          "griller": [],
-          "the-mothership": [],
-          fog: [],
-        },
-        normal_tide: {
-          water_levels: [],
-          rush: [],
-          "goldie-seeking": [],
-          "griller": [],
-          "the-mothership": [],
-          fog: [],
-        },
-        low_tide: {
-          water_levels: [],
-          "the-mothership": [],
-          fog: [],
-          "cohock-charge": [],
-        }
-      }
-    }
+      total: [
+        total[0],
+        total[1]
+      ],
+      waves: [
+        [
+          waves[2],
+          waves[4],
+          waves[6],
+          waves[8],
+          waves[9],
+          waves[12],
+          null
+        ],
+        [
+          waves[1],
+          waves[3],
+          waves[5],
+          waves[7],
+          waves[10],
+          waves[13],
+          null
+        ],
+        [
+          waves[0],
+          null,
+          null,
+          null,
+          waves[11],
+          waves[14],
+          waves[15],
+        ]
+      ]
+    };
   }
 }
