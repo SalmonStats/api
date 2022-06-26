@@ -111,9 +111,9 @@ export class WavesService {
               results 
               INNER JOIN players ON results.salmon_id = players."resultId" 
             WHERE 
-              results.start_time = TO_TIMESTAMP(1655575200) 
-              AND results.no_night_waves = false 
-              AND results.golden_ikura_num >= 140 
+              results.start_time = TO_TIMESTAMP(${start_time}) 
+              AND results.no_night_waves = ${nightLess}
+              AND results.golden_ikura_num >= ${threshold}
             GROUP BY 
               results.salmon_id, 
               results.golden_ikura_num, 
@@ -127,7 +127,7 @@ export class WavesService {
           results.members, 
           results.names 
         LIMIT 
-          100
+          ${limit}
       ) 
       SELECT 
         * 
@@ -170,13 +170,13 @@ export class WavesService {
       ],
       waves: [
         [
-          waves[2],
-          waves[4],
-          waves[6],
-          waves[8],
-          waves[9],
-          waves[12],
-          null
+          waves[0],
+          null,
+          null,
+          null,
+          waves[11],
+          waves[14],
+          waves[15],
         ],
         [
           waves[1],
@@ -188,14 +188,14 @@ export class WavesService {
           null
         ],
         [
-          waves[0],
-          null,
-          null,
-          null,
-          waves[11],
-          waves[14],
-          waves[15],
-        ]
+          waves[2],
+          waves[4],
+          waves[6],
+          waves[8],
+          waves[9],
+          waves[12],
+          null
+        ],
       ]
     };
   }
