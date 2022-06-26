@@ -77,30 +77,62 @@ export class WavesService {
 
   queryBuilderTotal(start_time: number, nightLess: boolean, limit: number, threshold: number): PrismaPromise<Total[]> {
     return this.prisma.$queryRaw<Total[]>`
-    WITH waves AS (
-      SELECT
-        *,
-        RANK() OVER(ORDER BY golden_ikura_num DESC)::INT
-      FROM (
-        SELECT
-          MAX(results.golden_ikura_num) AS golden_ikura_num,
-          no_night_waves,
-          results.members,
-          ARRAY_AGG(players.name) as names
-        FROM
-          results
-          INNER JOIN players ON results.salmon_id = players."resultId"
-        WHERE
-          start_time = TO_TIMESTAMP(${start_time})
-          AND no_night_waves = ${nightLess}
-        GROUP BY results.members, results.salmon_id
-        ) AS waves
-      LIMIT ${limit}
-    )
-    SELECT
-      *
-    FROM
-      waves;
+      WITH results AS (
+        SELECT 
+          MAX(golden_ikura_num), 
+          RANK() OVER(
+            ORDER BY 
+              MAX(golden_ikura_num) DESC
+          ):: INT, 
+          no_night_waves, 
+          members, 
+          names 
+        FROM 
+          (
+            SELECT 
+              results.salmon_id, 
+              results.golden_ikura_num, 
+              results.no_night_waves, 
+              results.members, 
+              (
+                SELECT 
+                  ARRAY_AGG(name) 
+                FROM 
+                  (
+                    SELECT 
+                      UNNEST(
+                        ARRAY_AGG(players.name)
+                      ) AS name 
+                    ORDER BY 
+                      name
+                  ) AS name
+              ) AS names 
+            FROM 
+              results 
+              INNER JOIN players ON results.salmon_id = players."resultId" 
+            WHERE 
+              results.start_time = TO_TIMESTAMP(1655575200) 
+              AND results.no_night_waves = false 
+              AND results.golden_ikura_num >= 140 
+            GROUP BY 
+              results.salmon_id, 
+              results.golden_ikura_num, 
+              results.no_night_waves, 
+              results.members 
+            ORDER BY 
+              results.golden_ikura_num DESC
+          ) AS results 
+        GROUP BY 
+          results.no_night_waves, 
+          results.members, 
+          results.names 
+        LIMIT 
+          100
+      ) 
+      SELECT 
+        * 
+      FROM 
+        results;
     `;
   }
 
