@@ -20,6 +20,10 @@ import { WavesService } from './waves/waves.service';
 import { VersionsService } from './versions/versions.service';
 import { VersionsController } from './versions/versions.controller';
 import { VersionsModule } from './versions/versions.module';
+import { WeaponsController } from './weapons/weapons.controller';
+import { WeaponsModule } from './weapons/weapons.module';
+import { TotalsService } from './totals/totals.service';
+import { TotalsModule } from './totals/totals.module';
 
 @Module({
   controllers: [
@@ -29,6 +33,7 @@ import { VersionsModule } from './versions/versions.module';
     NicknameAndIconController,
     WavesController,
     VersionsController,
+    WeaponsController,
   ],
   providers: [
     ApiService,
@@ -38,6 +43,7 @@ import { VersionsModule } from './versions/versions.module';
     WavesService,
     NicknameAndIconService,
     VersionsService,
+    TotalsService,
   ],
   imports: [
     ResultsModule,
@@ -47,7 +53,9 @@ import { VersionsModule } from './versions/versions.module';
     StatsModule,
     HttpModule,
     WavesModule,
-    VersionsModule
+    VersionsModule,
+    WeaponsModule,
+    TotalsModule
   ],
 })
 export class ApiModule {}

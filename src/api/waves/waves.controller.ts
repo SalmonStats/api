@@ -4,15 +4,34 @@ import { WavesService } from './waves.service';
 
 @Controller('waves')
 export class WavesController {
-  constructor(private readonly service: WavesService) { }
+  constructor(private readonly service: WavesService) {}
 
-  @Get(":start_time")
-  @ApiTags('WAVE記録')
+  @Get(':start_time')
+  @ApiTags('納品記録')
   @ApiOperation({ operationId: 'WAVE記録取得' })
-  @ApiParam({ name: 'start_time', type: "integer", example: 1655575200, required: true })
+  @ApiParam({
+    name: 'start_time',
+    type: 'integer',
+    example: 1655575200,
+    required: true,
+  })
+  @ApiQuery({
+    name: 'water_level',
+    type: 'integer',
+    example: 1,
+    required: true,
+  })
+  @ApiQuery({
+    name: 'event_type',
+    type: 'integer',
+    example: 0,
+    required: true,
+  })
   find(
     @Param('start_time', ParseIntPipe) start_time: number,
+    @Query('event_type', ParseIntPipe) event_type: number,
+    @Query('water_level', ParseIntPipe) water_level: number,
   ) {
-    return this.service.findWaves(start_time);
+    return this.service.find(start_time, event_type, water_level);
   }
 }

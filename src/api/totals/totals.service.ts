@@ -1,25 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaPromise } from '@prisma/client';
+import dayjs from 'dayjs';
 import { PrismaService } from 'src/prisma.service';
-
-export interface Total {
-  water_level?: number;
-  event_type?: number;
-  nightless?: boolean;
-  golden_ikura_num: number;
-  rank: number;
-  members: string[];
-}
+import { Total } from '../waves/waves.service';
 
 @Injectable()
-export class WavesService {
+export class TotalsService {
   constructor(private readonly prisma: PrismaService) {}
 
   private queryBuilder(
     start_time: number,
-    water_level: number,
-    event_type: number,
-    limit: number
+    nightLess: boolean,
+    limit: number,
+    threshold: number
   ): PrismaPromise<Total[]> {
     return this.prisma.$queryRaw<Total[]>`
       WITH results AS (
@@ -29,15 +22,15 @@ export class WavesService {
             ORDER BY 
               MAX(golden_ikura_num) DESC
           ):: INT, 
+          no_night_waves, 
           members, 
           names 
         FROM 
           (
             SELECT 
               results.salmon_id, 
-              waves.golden_ikura_num, 
-              waves.event_type, 
-              waves.water_level, 
+              results.golden_ikura_num, 
+              results.no_night_waves, 
               results.members, 
               (
                 SELECT 
@@ -53,27 +46,22 @@ export class WavesService {
                   ) AS name
               ) AS names 
             FROM 
-              waves 
-              INNER JOIN players ON waves."resultId" = players."resultId" 
-              INNER JOIN results ON waves."resultId" = results.salmon_id 
+              results 
+              INNER JOIN players ON results.salmon_id = players."resultId" 
             WHERE 
               results.start_time = TO_TIMESTAMP(${start_time}) 
-              AND waves.event_type = ${event_type}
-              AND waves.water_level = ${water_level}
-              AND waves.golden_ikura_num >= 40
+              AND results.no_night_waves = ${nightLess}
+              AND results.golden_ikura_num >= ${threshold}
             GROUP BY 
               results.salmon_id, 
-              waves.wave_id, 
-              waves.golden_ikura_num, 
-              waves.event_type, 
-              waves.water_level, 
+              results.golden_ikura_num, 
+              results.no_night_waves, 
               results.members 
             ORDER BY 
               results.golden_ikura_num DESC
           ) AS results 
         GROUP BY 
-          results.event_type, 
-          results.water_level, 
+          results.no_night_waves, 
           results.members, 
           results.names 
         LIMIT 
@@ -86,7 +74,12 @@ export class WavesService {
     `;
   }
 
-  find(startTime: number, event_type: number, water_level: number, limit: number = 25): Promise<Total[]> {
-    return this.queryBuilder(startTime, water_level, event_type, limit);
+  find(
+    startTime: number,
+    nightless: boolean,
+    limit: number = 25,
+    threshold: number = 130
+  ): Promise<Total[]> {
+    return this.queryBuilder(startTime, nightless, limit, threshold);
   }
 }
