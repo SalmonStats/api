@@ -8,7 +8,7 @@ export class TotalsController {
   constructor(private readonly service: TotalsService) {}
 
   @Get(':start_time')
-  @ApiTags('納品記録')
+  @ApiTags('シフト記録')
   @ApiOperation({ operationId: '総合記録取得' })
   @ApiParam({
     name: 'start_time',
@@ -26,6 +26,6 @@ export class TotalsController {
     @Param('start_time', ParseIntPipe) start_time: number,
     @Query('nightless', ParseBoolPipe) nightless: boolean
   ): Promise<Total[]> {
-    return this.service.find(start_time, nightless, 100, 140);
+    return this.service.find(start_time, nightless, 100, 120);
   }
 }

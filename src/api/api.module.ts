@@ -24,6 +24,10 @@ import { WeaponsController } from './weapons/weapons.controller';
 import { WeaponsModule } from './weapons/weapons.module';
 import { TotalsService } from './totals/totals.service';
 import { TotalsModule } from './totals/totals.module';
+import { WeaponsService } from './weapons/weapons.service';
+import { SalmonidsController } from './salmonids/salmonids.controller';
+import { SalmonidsService } from './salmonids/salmonids.service';
+import { SalmonidsModule } from './salmonids/salmonids.module';
 
 @Module({
   controllers: [
@@ -34,6 +38,7 @@ import { TotalsModule } from './totals/totals.module';
     WavesController,
     VersionsController,
     WeaponsController,
+    SalmonidsController,
   ],
   providers: [
     ApiService,
@@ -44,6 +49,8 @@ import { TotalsModule } from './totals/totals.module';
     NicknameAndIconService,
     VersionsService,
     TotalsService,
+    WeaponsService,
+    SalmonidsService
   ],
   imports: [
     ResultsModule,
@@ -55,7 +62,8 @@ import { TotalsModule } from './totals/totals.module';
     WavesModule,
     VersionsModule,
     WeaponsModule,
-    TotalsModule
+    TotalsModule,
+    SalmonidsModule
   ],
 })
 export class ApiModule {}

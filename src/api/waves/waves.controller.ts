@@ -7,7 +7,7 @@ export class WavesController {
   constructor(private readonly service: WavesService) {}
 
   @Get(':start_time')
-  @ApiTags('納品記録')
+  @ApiTags('シフト記録')
   @ApiOperation({ operationId: 'WAVE記録取得' })
   @ApiParam({
     name: 'start_time',

@@ -3,10 +3,10 @@ import { PrismaPromise } from '@prisma/client';
 import dayjs from 'dayjs';
 import { PrismaService } from 'src/prisma.service';
 
-interface SuppliedWeapon {
+export interface SuppliedWeapon {
   rank: number
-  waves: number
-  supplied_count: number
+  shifts_worked: number
+  supplied_weapons_count: number
   nsaid: string
   name: string
 }
@@ -21,32 +21,38 @@ export class WeaponsService {
   ): PrismaPromise<SuppliedWeapon[]> {
     return this.prisma.$queryRaw`
     WITH results AS (
-	    SELECT
-	    RANK() OVER(ORDER BY CARDINALITY(ARRAY_AGG(DISTINCT weapon_lists)) DESC)::INT,
-	    COUNT(name)::INT AS waves,
-	    CARDINALITY(ARRAY_AGG(DISTINCT weapon_lists)) supplied_count,
-	    nsaid,
-	    MIN(name) AS name
-	    FROM (
-	    	SELECT
-	    	*
-	    	FROM
-	    	players
-	    	INNER JOIN
-	    	results
-	    	ON
-	    	players."resultId" = results.salmon_id
-	    ) AS results,
-	    UNNEST(weapon_list) AS weapon_lists
-	    WHERE
-	    results.start_time = TO_TIMESTAMP(${start_time})
-	    GROUP BY nsaid
-	    LIMIT ${limit}
+      SELECT
+      DISTINCT supplied_weapon, MIN(job_id) AS job_id, nsaid, MIN(name) AS name
+      FROM 
+        (
+        SELECT 
+        * 
+        FROM
+            players 
+            INNER JOIN results ON players."resultId" = results.salmon_id
+        WHERE
+        start_time = TO_TIMESTAMP(${start_time})
+        ) AS results,
+      UNNEST(weapon_list) AS supplied_weapon
+      GROUP BY
+      supplied_weapon, nsaid
+      ORDER BY
+      nsaid
     )
     SELECT
-    *
-    FROM
+    nsaid,
+    MIN(name) AS name,
+    MAX(job_id) - MIN(job_id) + 1 AS shifts_worked,
+    COUNT(*)::INT AS supplied_weapons_count,
+    RANK() OVER(ORDER BY COUNT(*) DESC)::INT
+    FROM 
     results
+    GROUP BY
+    nsaid
+    ORDER BY
+    rank,
+    shifts_worked
+    LIMIT ${limit}
     `;
   }
 

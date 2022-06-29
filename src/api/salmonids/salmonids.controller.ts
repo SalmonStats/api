@@ -1,14 +1,14 @@
 import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
-import { SuppliedWeapon, WeaponsService } from './weapons.service';
+import { SalmonidsService, SalmonidTotal } from './salmonids.service';
 
-@Controller('weapons')
-export class WeaponsController {
-  constructor(private readonly service: WeaponsService) {}
-
+@Controller('salmonids')
+export class SalmonidsController {
+  constructor(private readonly service: SalmonidsService) { }
+  
   @Get(':start_time')
   @ApiTags('シフト記録')
-  @ApiOperation({ operationId: '支給ブキ数記録取得' })
+  @ApiOperation({ operationId: 'オオモノ数記録取得' })
   @ApiParam({
     name: 'start_time',
     type: 'integer',
@@ -17,7 +17,7 @@ export class WeaponsController {
   })
   find(
     @Param('start_time', ParseIntPipe) start_time: number
-  ): Promise<SuppliedWeapon[]> {
+  ): Promise<SalmonidTotal> {
     return this.service.find(start_time);
   }
 }
