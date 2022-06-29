@@ -6,7 +6,7 @@ import { PrismaService } from 'src/prisma.service';
 export interface SuppliedWeapon {
   rank: number
   shifts_worked: number
-  supplied_weapons_count: number
+  supplied_weapon_counts: number
   nsaid: string
   name: string
 }
@@ -31,7 +31,8 @@ export class WeaponsService {
             players 
             INNER JOIN results ON players."resultId" = results.salmon_id
         WHERE
-        start_time = TO_TIMESTAMP(${start_time})
+        job_id IS NOT NULL
+        AND start_time = TO_TIMESTAMP(${start_time})
         ) AS results,
       UNNEST(weapon_list) AS supplied_weapon
       GROUP BY
@@ -43,7 +44,7 @@ export class WeaponsService {
     nsaid,
     MIN(name) AS name,
     MAX(job_id) - MIN(job_id) + 1 AS shifts_worked,
-    COUNT(*)::INT AS supplied_weapons_count,
+    COUNT(*)::INT AS supplied_weapon_counts,
     RANK() OVER(ORDER BY COUNT(*) DESC)::INT
     FROM 
     results
