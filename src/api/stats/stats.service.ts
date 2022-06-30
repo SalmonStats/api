@@ -283,7 +283,7 @@ export class StatsService {
           ON
           players."resultId" = results.salmon_id
           WHERE
-          start_time = TO_TIMESTAMP(1655575200)
+          start_time = TO_TIMESTAMP(${start_time})
           AND job_id IS NOT NULL
           ORDER BY
           nsaid,
