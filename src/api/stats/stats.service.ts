@@ -1,6 +1,9 @@
 import { Prisma, PrismaPromise } from '.prisma/client';
 import { Injectable } from '@nestjs/common';
 import { PrismaService} from 'src/prisma.service';
+import { NicknameAndIconRequestDto } from '../nickname_and_icon/nickname_and_icon.request';
+import { NicknameAndIcon, NicknameAndIconResponseDto } from '../nickname_and_icon/nickname_and_icon.response';
+import { NicknameAndIconService } from '../nickname_and_icon/nickname_and_icon.service';
 
 export interface ShiftStats {
   job_results: {
@@ -58,6 +61,7 @@ interface GradeResult {
   rank: number
   nsaid: string
   name: string
+  thumbnail_url: string
   grade_point_max: number
   shift_worked: number
 }
@@ -103,8 +107,9 @@ interface Salmonid {
 
 @Injectable()
 export class StatsService {
-  constructor(private readonly prisma: PrismaService) {}
-
+  constructor(private readonly prisma: PrismaService, private readonly service: NicknameAndIconService) {
+  }
+  
   private queryBuilder(start_time: number): PrismaPromise<Salmonid[]> {
     return this.prisma.$queryRaw<Salmonid[]>`
       WITH results AS (
@@ -317,7 +322,36 @@ export class StatsService {
       this.queryBuilderWeapons(start_time, 100),
       this.queryBuilderGrades(start_time),
     ]);
+    
+    const members: string[] = [...new Set(data[4].map((member) => member.nsaid).concat(data[3].map((member) => member.nsaid)))];
+    console.log(members.length)
+    // 画像情報を取得
+    // 最高取得件数が200件なので一括で取得できるはず（多分100x4まで対応)
+    const request = new NicknameAndIconRequestDto(members);
+    const nicknameAndIcons: NicknameAndIcon[]= (await this.service.findMany(request)).nickname_and_icons
 
+    // 評価ランキングのデータを上書き
+    const getPlayerThumbnailURL = (nsaid: string): string | null => {
+      const player = nicknameAndIcons.find((player) => player.nsa_id === nsaid);
+      return player.thumbnail_url;
+    }
+
+    // 画像データの上書き
+    const gradeResultMembers = data[4].map((member) => {
+      const thumbnailURL = getPlayerThumbnailURL(member.nsaid);
+      member["thumbnail_url"] = thumbnailURL;
+      return member;
+    })
+
+    const weaponResultMembers = data[3].map((member) => {
+      const thumbnailURL = getPlayerThumbnailURL(member.nsaid);
+      member["thumbnail_url"] = thumbnailURL;
+      return member;
+    })
+
+    console.log(gradeResultMembers)
+
+    // WAVEの情報を取得
     const getWaveResult = (
       water_level: number,
       event_type: number
@@ -446,8 +480,8 @@ export class StatsService {
           boss_kill_counts_max: data[1][0].boss_kill_counts_max_21,
         },
       ],
-      weapon_results: data[3],
-      grade_results: data[4]
+      weapon_results: weaponResultMembers,
+      grade_results: gradeResultMembers
     };
 
     return response;

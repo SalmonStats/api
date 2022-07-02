@@ -1,5 +1,6 @@
-import { Player, User as UserModel } from '.prisma/client';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Player, PrismaPromise } from '.prisma/client';
+import { Injectable } from '@nestjs/common';
+import { ApiProperty } from '@nestjs/swagger';
 import { Expose, plainToClass, Transform } from 'class-transformer';
 import snakecaseKeys from 'snakecase-keys';
 import { PrismaService } from 'src/prisma.service';
@@ -7,42 +8,82 @@ import {
   PaginatedRequestDto,
   PaginatedRequestDtoForUser,
 } from '../dto/pagination.dto';
-import { Result } from '../dto/result.response.dto';
+import { Result as CoopResult } from '../dto/result.response.dto';
 
-export class UserData {
-  @Expose()
-  @Transform((params) => params.obj['count']['all'])
-  job_id: number;
+interface Result {
+  golden_ikura_num: number
+  ikura_num: number
+}
 
-  @Expose()
-  @Transform((params) => params.obj['sum']['golden_ikura_num'])
+interface StageResult {
+  stage_id: number
+  grade_point_max: number
+  shifts_worked: number
+  kuma_point_total: number
+  player_results: Result
+  team_results: Result
+}
+
+export interface UserData {
+  stage_id: number
+  player_golden_ikura_num: number
+  player_ikura_num: number
+  golden_ikura_num: number
+  ikura_num: number
+  grade_point: number
+  kuma_point: number
+  shifts_worked: number
+  nightless: boolean
+}
+
+export class UserStats {
+  constructor(results: UserData[]) {
+    this.shifts_worked = results.reduce((acc, cur) => acc + cur.shifts_worked, 0);
+    this.golden_ikura_num = results.reduce((acc, cur) => acc + cur.golden_ikura_num, 0);
+    this.ikura_num = results.reduce((acc, cur) => acc + cur.ikura_num, 0);
+    this.kuma_point = results.reduce((acc, cur) => acc + cur.kuma_point, 0);
+    this.grade_point = Math.max(...results.map((cur) => cur.grade_point));
+    console.log(results)
+  }
+  
+  @ApiProperty()
+  nsaid: string;
+  
+  @ApiProperty()
+  name: string;
+  
+  @ApiProperty()
+  thumbnail_url: string;
+  
+  @ApiProperty()
+  shifts_worked: number;
+
+  @ApiProperty()
   golden_ikura_num: number;
 
-  @Expose()
-  @Transform((params) => params.obj['sum']['ikura_num'])
+  @ApiProperty()
   ikura_num: number;
 
-  @Expose()
-  @Transform((params) => params.obj['sum']['dead_count'])
+  @ApiProperty()
   dead_count: number;
 
-  @Expose()
-  @Transform((params) => params.obj['sum']['kuma_point'])
+  @ApiProperty()
   kuma_point: number;
 
-  @Expose()
-  @Transform((params) => params.obj['sum']['help_count'])
+  @ApiProperty()
   help_count: number;
 
-  @Expose()
-  @Transform((params) => params.obj['max']['grade_id'])
+  @ApiProperty()
   grade_id: number;
 
-  @Expose()
-  @Transform((params) => params.obj['max']['grade_point'])
+  @ApiProperty()
   grade_point: number;
+  
+  @ApiProperty()
+  stage_results: StageResult[];
 
-  results: Result[];
+  @ApiProperty()
+  results: CoopResult[];
 }
 
 @Injectable()
@@ -77,60 +118,62 @@ export class UsersService {
     });
   }
 
-  async find(nsaid: string): Promise<UserData> {
-    const user: UserData = plainToClass(
-      UserData,
-      snakecaseKeys(
-        await this.prisma.player.aggregate({
-          where: {
-            nsaid: nsaid,
-          },
-          _sum: {
-            goldenIkuraNum: true,
-            ikuraNum: true,
-            deadCount: true,
-            helpCount: true,
-            kumaPoint: true,
-          },
-          _max: {
-            gradePoint: true,
-            gradeId: true,
-          },
-          _count: {
-            _all: true,
-          },
-        })
-      ),
-      {
-        excludeExtraneousValues: true,
-        exposeUnsetFields: false,
-      }
-    );
+  private queryBuilder(nsaid: string): PrismaPromise<UserData[]> {
+    return this.prisma.$queryRaw<UserData[]>`
+    WITH results AS (
+      SELECT
+      nsaid,
+      players.golden_ikura_num AS player_golden_ikura_num,
+      players.ikura_num AS player_ikura_num,
+      results.golden_ikura_num,
+      results.ikura_num,
+      grade_point,
+      players.boss_kill_counts,
+      dead_count,
+      help_count,
+      stage_id,
+      results.start_time,
+      kuma_point,
+      no_night_waves
+      FROM
+      players
+      INNER JOIN
+      results
+      ON
+      players."resultId" = results.salmon_id
+      INNER JOIN
+      schedules
+      ON
+      results.start_time = schedules.start_time
+      WHERE
+      nsaid = ${nsaid}
+    )
+    SELECT
+    stage_id,
+    MAX(player_golden_ikura_num) AS player_golden_ikura_num,
+    MAX(player_ikura_num) AS player_ikura_num,
+    MAX(golden_ikura_num) AS golden_ikura_num,
+    MAX(ikura_num) AS ikura_num,
+    MAX(grade_point) AS grade_point,
+    COUNT(*)::INT AS shifts_worked,
+    SUM(kuma_point)::INT AS kuma_point,
+    no_night_waves AS nightless
+    FROM
+    results
+    GROUP BY
+    stage_id,
+    no_night_waves
+    ORDER BY
+    no_night_waves,
+    stage_id
+    `;
+  }
 
-    const results: Result[] = snakecaseKeys(
-      await this.prisma.result.findMany({
-        where: {
-          members: {
-            has: nsaid,
-          },
-        },
-        include: {
-          jobResult: true,
-        },
-        orderBy: {
-          playTime: 'desc',
-        },
-        skip: 0,
-        take: 50,
-      })
-    ).map((result) =>
-      plainToClass(Result, result, {
-        exposeUnsetFields: false,
-        excludeExtraneousValues: true,
-      })
-    );
+  async find(nsaid: string): Promise<UserStats> {
+    const results = await this.prisma.$transaction([
+      this.queryBuilder(nsaid),
+    ])
 
-    user.results = results;
-    return user;
+    return new UserStats(results[0])
   }
 }

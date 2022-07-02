@@ -1,4 +1,3 @@
-import { Prisma } from '.prisma/client';
 import {
   Controller,
   Get,
@@ -15,9 +14,6 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
-import dayjs from 'dayjs';
-import { StatsResultsDto as StatsResultsModel } from '../dto/stats.response.dto';
-import { ParseOptionalBoolPipe } from '../validation/parse-optional-boolean.pipe';
 import { ShiftStats, StatsService } from './stats.service';
 
 @Controller('stats')

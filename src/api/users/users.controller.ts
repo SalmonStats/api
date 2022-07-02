@@ -17,7 +17,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { PaginatedRequestDtoForUser } from '../dto/pagination.dto';
-import { UserData, UsersService } from './users.service';
+import { UserData, UsersService, UserStats } from './users.service';
 
 @Controller('users')
 export class UsersController {
@@ -25,7 +25,7 @@ export class UsersController {
 
   @Get('')
   @ApiTags('ユーザー')
-  @ApiOperation({ operationId: '一覧取得' })
+  @ApiOperation({ operationId: '一覧検索' })
   @ApiOkResponse()
   @ApiQuery({ name: 'nickname', type: String, example: 'みなかみはちみ' })
   findMany(
@@ -37,11 +37,11 @@ export class UsersController {
 
   @Get(':nsaid')
   @ApiTags('ユーザー')
-  @ApiOperation({ operationId: '取得' })
+  @ApiOperation({ operationId: '検索' })
   @ApiOkResponse()
   @ApiNotFoundResponse()
   @ApiParam({ name: 'nsaid', example: '91d160aa84e88da6' })
-  find(@Param('nsaid') nsaid: string): Promise<UserData> {
+  find(@Param('nsaid') nsaid: string): Promise<UserStats> {
     return this.service.find(nsaid);
   }
 }

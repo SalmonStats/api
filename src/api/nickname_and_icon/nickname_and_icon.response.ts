@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsString } from 'class-validator';
 
-class NicknameAndIcon {
+export class NicknameAndIcon {
   @IsString()
   @ApiProperty()
   nickname: string;
