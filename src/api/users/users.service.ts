@@ -1,60 +1,138 @@
 import { Player, PrismaPromise } from '.prisma/client';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Res } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
-import { Expose, plainToClass, Transform } from 'class-transformer';
+import { Expose, plainToClass, Transform, Type } from 'class-transformer';
 import snakecaseKeys from 'snakecase-keys';
 import { PrismaService } from 'src/prisma.service';
-import {
-  PaginatedRequestDto,
-  PaginatedRequestDtoForUser,
-} from '../dto/pagination.dto';
+import { PaginatedRequestDtoForUser } from '../dto/pagination.dto';
 import { Result as CoopResult } from '../dto/result.response.dto';
+import { NicknameAndIconRequestDto } from '../nickname_and_icon/nickname_and_icon.request';
+import { NicknameAndIcon } from '../nickname_and_icon/nickname_and_icon.response';
+import { NicknameAndIconService } from '../nickname_and_icon/nickname_and_icon.service';
 
-interface Result {
-  golden_ikura_num: number
-  ikura_num: number
+class Result {
+  constructor(golden_ikura_num, ikura_num) {
+    this.golden_ikura_num = golden_ikura_num;
+    this.ikura_num = ikura_num;
+  }
+
+  golden_ikura_num: number;
+  ikura_num: number;
 }
 
-interface StageResult {
-  stage_id: number
-  grade_point_max: number
-  shifts_worked: number
-  kuma_point_total: number
-  player_results: Result
-  team_results: Result
+class StageResult {
+  constructor(result: UserData, stage_id: number, nightless: boolean) {
+    if (result === undefined) {
+      this.stage_id = stage_id;
+      this.nightless = nightless;
+      this.grade_point_max = null;
+      this.shifts_worked = null;
+      this.kuma_point_total = null;
+      this.player_results = new Result(null, null);
+      this.team_results = new Result(null, null);
+      return;
+    } else {
+      this.stage_id = result.stage_id;
+      this.nightless = nightless;
+      this.grade_point_max = result.grade_point;
+      this.shifts_worked = result.shifts_worked;
+      this.kuma_point_total = result.kuma_point;
+      this.player_results = new Result(
+        result.player_golden_ikura_num,
+        result.player_ikura_num
+      );
+      this.team_results = new Result(result.golden_ikura_num, result.ikura_num);
+    }
+  }
+
+  @ApiProperty()
+  stage_id: number;
+  @ApiProperty()
+  grade_point_max: number;
+  @ApiProperty()
+  shifts_worked: number;
+  @ApiProperty()
+  kuma_point_total: number;
+  nightless: boolean;
+  @ApiProperty({ type: Result })
+  player_results: Result;
+  @ApiProperty({ type: Result })
+  team_results?: Result;
 }
 
-export interface UserData {
-  stage_id: number
-  player_golden_ikura_num: number
-  player_ikura_num: number
-  golden_ikura_num: number
-  ikura_num: number
-  grade_point: number
-  kuma_point: number
-  shifts_worked: number
-  nightless: boolean
+interface UserData {
+  stage_id: number;
+  player_golden_ikura_num: number;
+  player_ikura_num: number;
+  golden_ikura_num: number;
+  ikura_num: number;
+  grade_point: number;
+  kuma_point: number;
+  shifts_worked: number;
+  nightless: boolean;
 }
 
 export class UserStats {
-  constructor(results: UserData[]) {
-    this.shifts_worked = results.reduce((acc, cur) => acc + cur.shifts_worked, 0);
-    this.golden_ikura_num = results.reduce((acc, cur) => acc + cur.golden_ikura_num, 0);
+  constructor(results: UserData[], nicknameAndIcons: NicknameAndIcon[]) {
+    this.shifts_worked = results.reduce(
+      (acc, cur) => acc + cur.shifts_worked,
+      0
+    );
+    this.golden_ikura_num = results.reduce(
+      (acc, cur) => acc + cur.golden_ikura_num,
+      0
+    );
     this.ikura_num = results.reduce((acc, cur) => acc + cur.ikura_num, 0);
     this.kuma_point = results.reduce((acc, cur) => acc + cur.kuma_point, 0);
     this.grade_point = Math.max(...results.map((cur) => cur.grade_point));
-    console.log(results)
+    this.nickname = nicknameAndIcons[0].nickname;
+    this.thumbnail_url = nicknameAndIcons[0].thumbnail_url;
+
+    const getStageResult = (stageId: number, nightless: boolean) => {
+      const result = results.find(
+        (cur) => cur.stage_id === stageId && cur.nightless === nightless
+      );
+      return new StageResult(result, stageId, nightless);
+    };
+
+    this.stage_results = [
+      {
+        stage_id: 5000,
+        night: getStageResult(5000, false),
+        nightless: getStageResult(5000, true),
+      },
+      {
+        stage_id: 5001,
+        night: getStageResult(5001, false),
+        nightless: getStageResult(5001, true),
+      },
+      {
+        stage_id: 5002,
+        night: getStageResult(5002, false),
+        nightless: getStageResult(5002, true),
+      },
+      {
+        stage_id: 5003,
+        night: getStageResult(5003, false),
+        nightless: getStageResult(5003, true),
+      },
+      {
+        stage_id: 5004,
+        night: getStageResult(5004, false),
+        nightless: getStageResult(5004, true),
+      },
+    ];
   }
-  
+
   @ApiProperty()
   nsaid: string;
-  
+
   @ApiProperty()
-  name: string;
-  
+  nickname: string;
+
   @ApiProperty()
   thumbnail_url: string;
-  
+
   @ApiProperty()
   shifts_worked: number;
 
@@ -78,17 +156,27 @@ export class UserStats {
 
   @ApiProperty()
   grade_point: number;
-  
-  @ApiProperty()
-  stage_results: StageResult[];
 
-  @ApiProperty()
+  @ApiProperty({ type: [StageResult] })
+  stage_results: StageResults[];
+
+  @ApiProperty({ type: [CoopResult] })
+  @Type(() => CoopResult)
   results: CoopResult[];
+}
+
+class StageResults {
+  stage_id: number;
+  night: StageResult;
+  nightless: StageResult;
 }
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly service: NicknameAndIconService
+  ) {}
 
   async findMany(
     query: PaginatedRequestDtoForUser
@@ -170,10 +258,17 @@ export class UsersService {
   }
 
   async find(nsaid: string): Promise<UserStats> {
-    const results = await this.prisma.$transaction([
-      this.queryBuilder(nsaid),
-    ])
+    const results = await this.prisma.$transaction([this.queryBuilder(nsaid)]);
 
-    return new UserStats(results[0])
+    const request: NicknameAndIconRequestDto = new NicknameAndIconRequestDto([
+      nsaid,
+    ]);
+    const nicknameAndIcons: NicknameAndIcon[] = (
+      await this.service.findMany(request)
+    ).nickname_and_icons;
+
+    const response = new UserStats(results[0], nicknameAndIcons);
+
+    return response;
   }
 }
