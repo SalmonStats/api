@@ -170,6 +170,16 @@ paths:
           description: ''
       tags:
         - シフト記録
+  /v1/system:
+    get:
+      operationId: サーバー情報
+      summary: ''
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags:
+        - システム
   /v1/results/{salmon_id}:
     get:
       operationId: 取得
@@ -473,7 +483,11 @@ paths:
 info:
   title: Salmon Stats API Documents
   description: ''
+<<<<<<< HEAD
   version: 1.0.6
+=======
+  version: 1.0.6.1
+>>>>>>> 320482c (- システム情報取得に対応)
   contact: {}
 tags: []
 servers: []
