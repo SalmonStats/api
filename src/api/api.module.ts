@@ -31,6 +31,9 @@ import { SalmonidsModule } from './salmonids/salmonids.module';
 import { RestoreController } from './restore/restore.controller';
 import { RestoreService } from './restore/restore.service';
 import { RestoreModule } from './restore/restore.module';
+import { SystemModule } from './system/system.module';
+import { SystemController } from './system/system.controller';
+import { SystemService } from './system/system.service';
 
 @Module({
   controllers: [
@@ -43,6 +46,7 @@ import { RestoreModule } from './restore/restore.module';
     WeaponsController,
     SalmonidsController,
     RestoreController,
+    SystemController,
   ],
   providers: [
     ApiService,
@@ -56,6 +60,7 @@ import { RestoreModule } from './restore/restore.module';
     WeaponsService,
     SalmonidsService,
     RestoreService,
+    SystemService,
   ],
   imports: [
     ResultsModule,
@@ -70,6 +75,7 @@ import { RestoreModule } from './restore/restore.module';
     TotalsModule,
     SalmonidsModule,
     RestoreModule,
+    SystemModule,
   ],
 })
 export class ApiModule {}
