@@ -4,78 +4,77 @@ import { PrismaService } from 'src/prisma.service';
 
 export interface SalmonidTotal {
   job_results: {
-    is_clear: number
-    is_failure: number
+    is_clear: number;
+    is_failure: number;
     failure_wave: {
-      time_limit: number,
-      wipe_out: number
-    }[]
-  }
-  wave_results: WaveResult[]
-  boss_counts: number[]
-  boss_counts_max: number[]
-  boss_kill_counts: number[]
-  boss_kill_counts_max: number[]
+      time_limit: number;
+      wipe_out: number;
+    }[];
+  };
+  wave_results: WaveResult[];
+  boss_counts: number[];
+  boss_counts_max: number[];
+  boss_kill_counts: number[];
+  boss_kill_counts_max: number[];
 }
 
 interface Salmonid {
-  boss_counts_3: number
-  boss_counts_6: number
-  boss_counts_9: number
-  boss_counts_12: number
-  boss_counts_13: number
-  boss_counts_14: number
-  boss_counts_15: number
-  boss_counts_16: number
-  boss_counts_21: number
-  boss_counts_max_3: number
-  boss_counts_max_6: number
-  boss_counts_max_9: number
-  boss_counts_max_12: number
-  boss_counts_max_13: number
-  boss_counts_max_14: number
-  boss_counts_max_15: number
-  boss_counts_max_16: number
-  boss_counts_max_21: number
-  boss_kill_counts_3: number
-  boss_kill_counts_6: number
-  boss_kill_counts_9: number
-  boss_kill_counts_12: number
-  boss_kill_counts_13: number
-  boss_kill_counts_14: number
-  boss_kill_counts_15: number
-  boss_kill_counts_16: number
-  boss_kill_counts_21: number
-  boss_kill_counts_max_3: number
-  boss_kill_counts_max_6: number
-  boss_kill_counts_max_9: number
-  boss_kill_counts_max_12: number
-  boss_kill_counts_max_13: number
-  boss_kill_counts_max_14: number
-  boss_kill_counts_max_15: number
-  boss_kill_counts_max_16: number
-  boss_kill_counts_max_21: number
+  boss_counts_3: number;
+  boss_counts_6: number;
+  boss_counts_9: number;
+  boss_counts_12: number;
+  boss_counts_13: number;
+  boss_counts_14: number;
+  boss_counts_15: number;
+  boss_counts_16: number;
+  boss_counts_21: number;
+  boss_counts_max_3: number;
+  boss_counts_max_6: number;
+  boss_counts_max_9: number;
+  boss_counts_max_12: number;
+  boss_counts_max_13: number;
+  boss_counts_max_14: number;
+  boss_counts_max_15: number;
+  boss_counts_max_16: number;
+  boss_counts_max_21: number;
+  boss_kill_counts_3: number;
+  boss_kill_counts_6: number;
+  boss_kill_counts_9: number;
+  boss_kill_counts_12: number;
+  boss_kill_counts_13: number;
+  boss_kill_counts_14: number;
+  boss_kill_counts_15: number;
+  boss_kill_counts_16: number;
+  boss_kill_counts_21: number;
+  boss_kill_counts_max_3: number;
+  boss_kill_counts_max_6: number;
+  boss_kill_counts_max_9: number;
+  boss_kill_counts_max_12: number;
+  boss_kill_counts_max_13: number;
+  boss_kill_counts_max_14: number;
+  boss_kill_counts_max_15: number;
+  boss_kill_counts_max_16: number;
+  boss_kill_counts_max_21: number;
 }
 
 interface JobResult {
-  failure_wave: number
-  failure_reason: string
-  is_clear: boolean
-  count: number
+  failure_wave: number;
+  failure_reason: string;
+  is_clear: boolean;
+  count: number;
 }
 
 interface WaveResult {
-  golden_ikura_num: number
-  ikura_num: number
-  water_level: number
-  event_type: number
+  golden_ikura_num: number;
+  ikura_num: number;
+  water_level: number;
+  event_type: number;
 }
-
 
 @Injectable()
 export class SalmonidsService {
-  constructor(private readonly prisma: PrismaService) { }
-  
+  constructor(private readonly prisma: PrismaService) {}
+
   private queryBuilder(start_time: number): PrismaPromise<Salmonid> {
     return this.prisma.$queryRaw`
       WITH results AS (
@@ -192,9 +191,9 @@ export class SalmonidsService {
     const response = await this.prisma.$transaction([
       this.queryBuilder(start_time),
       this.queryBuilderResults(start_time),
-      this.queryBuilderWaves(start_time)
-    ])
-    
+      this.queryBuilderWaves(start_time),
+    ]);
+
     return {
       job_results: {
         is_clear: response[1].filter((x) => x.is_clear === true)[0].count,

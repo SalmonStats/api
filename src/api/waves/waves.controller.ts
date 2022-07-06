@@ -1,4 +1,11 @@
-import { Controller, Get, Param, ParseBoolPipe, ParseIntPipe, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  ParseBoolPipe,
+  ParseIntPipe,
+  Query,
+} from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { WavesService } from './waves.service';
 
@@ -30,7 +37,7 @@ export class WavesController {
   find(
     @Param('start_time', ParseIntPipe) start_time: number,
     @Query('event_type', ParseIntPipe) event_type: number,
-    @Query('water_level', ParseIntPipe) water_level: number,
+    @Query('water_level', ParseIntPipe) water_level: number
   ) {
     return this.service.find(start_time, event_type, water_level);
   }

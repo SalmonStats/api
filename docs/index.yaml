@@ -473,7 +473,7 @@ paths:
 info:
   title: Salmon Stats API Documents
   description: ''
-  version: 1.0.5.3
+  version: 1.0.6
   contact: {}
 tags: []
 servers: []

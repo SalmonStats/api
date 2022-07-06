@@ -6,6 +6,6 @@ import { NicknameAndIconService } from './nickname_and_icon.service';
 @Module({
   imports: [HttpModule],
   controllers: [NicknameAndIconController],
-  providers: [NicknameAndIconService]
+  providers: [NicknameAndIconService],
 })
 export class NicknameAndIconModule {}

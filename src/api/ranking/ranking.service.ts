@@ -98,7 +98,7 @@ export class RankingService {
       _max: {
         goldenIkuraNum: true,
         ikuraNum: true,
-        gradePoint: true
+        gradePoint: true,
       },
       orderBy: {
         _count: {
@@ -129,15 +129,15 @@ export class RankingService {
       },
       orderBy: {
         result: {
-          playTime: "asc"
-        }
+          playTime: 'asc',
+        },
       },
       select: {
         nsaid: true,
         name: true,
-        result: true
+        result: true,
       },
-      distinct: ["nsaid"]
+      distinct: ['nsaid'],
     });
 
     // SplatNet2からデータ取得

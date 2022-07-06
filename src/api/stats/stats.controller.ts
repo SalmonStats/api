@@ -30,8 +30,8 @@ export class StatsController {
   })
   @ApiNotFoundResponse()
   find(
-    @Param('start_time', ParseIntPipe) start_time: number,
+    @Param('start_time', ParseIntPipe) start_time: number
   ): Promise<ShiftStats> {
-    return this.service.getStats(start_time)
+    return this.service.getStats(start_time);
   }
 }

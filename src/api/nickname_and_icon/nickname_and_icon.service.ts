@@ -12,7 +12,7 @@ import { lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class NicknameAndIconService {
-  constructor(private readonly axios: HttpService) { }
+  constructor(private readonly axios: HttpService) {}
 
   async findMany(
     request: NicknameAndIconRequestDto
@@ -24,7 +24,7 @@ export class NicknameAndIconService {
         cookie: `iksm_session=${process.env.TOKEN}`,
       },
     };
-    const response = await lastValueFrom(this.axios.get(url, options))
+    const response = await lastValueFrom(this.axios.get(url, options));
 
     switch (response.status) {
       case 400:

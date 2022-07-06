@@ -79,7 +79,7 @@ export class PaginatedRequestDtoForWave extends PaginatedRequestDto {
     title: '',
     description: 'スケジュールID',
     default: 0,
-    example: 1655899200
+    example: 1655899200,
   })
   @IsInt()
   start_time: number;

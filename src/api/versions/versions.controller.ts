@@ -4,8 +4,8 @@ import { VersionsService } from './versions.service';
 
 @Controller('versions')
 export class VersionsController {
-  constructor(private readonly service: VersionsService) { }
-  
+  constructor(private readonly service: VersionsService) {}
+
   @Get()
   @ApiTags('バージョン')
   @ApiOperation({ operationId: 'バージョン取得' })

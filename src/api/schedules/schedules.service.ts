@@ -18,11 +18,13 @@ export class SchedulesService {
   }
 
   async findMany(): Promise<any[]> {
-    return (await this.prisma.schedule.findMany({
-      orderBy: {
-        startTime: "desc"
-      }
-    })).map(schedule => snakecaseKeys(schedule))
+    return (
+      await this.prisma.schedule.findMany({
+        orderBy: {
+          startTime: 'desc',
+        },
+      })
+    ).map((schedule) => snakecaseKeys(schedule));
   }
 
   async create() {}

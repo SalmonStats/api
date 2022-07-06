@@ -86,7 +86,12 @@ export class WavesService {
     `;
   }
 
-  find(startTime: number, event_type: number, water_level: number, limit: number = 25): Promise<Total[]> {
+  find(
+    startTime: number,
+    event_type: number,
+    water_level: number,
+    limit: number = 25
+  ): Promise<Total[]> {
     return this.queryBuilder(startTime, water_level, event_type, limit);
   }
 }

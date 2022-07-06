@@ -3,6 +3,6 @@ import { PrismaService } from 'src/prisma.service';
 import { WeaponsService } from './weapons.service';
 
 @Module({
-  providers: [WeaponsService, PrismaService]
+  providers: [WeaponsService, PrismaService],
 })
 export class WeaponsModule {}

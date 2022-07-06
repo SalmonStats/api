@@ -4,17 +4,17 @@ import dayjs from 'dayjs';
 import { PrismaService } from 'src/prisma.service';
 
 export interface SuppliedWeapon {
-  rank: number
-  shifts_worked: number
-  supplied_weapon_counts: number
-  nsaid: string
-  name: string
+  rank: number;
+  shifts_worked: number;
+  supplied_weapon_counts: number;
+  nsaid: string;
+  name: string;
 }
 
 @Injectable()
 export class WeaponsService {
-  constructor(private readonly prisma: PrismaService) { }
-  
+  constructor(private readonly prisma: PrismaService) {}
+
   private queryBuilder(
     start_time: number,
     limit: number

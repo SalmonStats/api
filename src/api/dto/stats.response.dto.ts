@@ -77,8 +77,8 @@ class JobResult {
   is_failure: {
     count: number;
     failure_reason: {
-      wipe_out: number[],
-      time_limit: number[]
+      wipe_out: number[];
+      time_limit: number[];
     };
   };
   golden_ikura_num: {
@@ -94,8 +94,8 @@ class JobResult {
 }
 
 export class LegacyStatsDto {
-  job_result: JobResult
-  boss_counts: {appearances: number, defeated: number}[]
+  job_result: JobResult;
+  boss_counts: { appearances: number; defeated: number }[];
 }
 
 export class StatsResultsDto {

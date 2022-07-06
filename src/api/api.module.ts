@@ -50,7 +50,7 @@ import { SalmonidsModule } from './salmonids/salmonids.module';
     VersionsService,
     TotalsService,
     WeaponsService,
-    SalmonidsService
+    SalmonidsService,
   ],
   imports: [
     ResultsModule,
@@ -63,7 +63,7 @@ import { SalmonidsModule } from './salmonids/salmonids.module';
     VersionsModule,
     WeaponsModule,
     TotalsModule,
-    SalmonidsModule
+    SalmonidsModule,
   ],
 })
 export class ApiModule {}

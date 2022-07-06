@@ -4,8 +4,8 @@ import { SalmonidsService, SalmonidTotal } from './salmonids.service';
 
 @Controller('salmonids')
 export class SalmonidsController {
-  constructor(private readonly service: SalmonidsService) { }
-  
+  constructor(private readonly service: SalmonidsService) {}
+
   @Get(':start_time')
   @ApiTags('シフト記録')
   @ApiOperation({ operationId: 'オオモノ数記録取得' })
