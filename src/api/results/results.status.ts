@@ -6,7 +6,7 @@ export enum Status {
   Updated = 'updated',
 }
 
-export class UploadResult {
+export class UploadStatus {
   constructor(salmon_id: number, status: Status) {
     this.salmon_id = salmon_id;
     this.status = status;
@@ -16,14 +16,4 @@ export class UploadResult {
 
   @ApiProperty({ enum: Status })
   status: Status;
-}
-
-export class UploadResults {
-  constructor(results: UploadResult[]) {
-    this.results = results;
-  }
-
-  @ApiProperty({ type: [UploadResult] })
-  @Type(() => UploadResult)
-  results: UploadResult[];
 }

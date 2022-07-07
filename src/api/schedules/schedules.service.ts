@@ -27,5 +27,15 @@ export class SchedulesService {
     ).map((schedule) => snakecaseKeys(schedule));
   }
 
-  async create() {}
+  async create() {
+    await this.prisma.schedule.createMany({
+      data: schedules.map((schedule) => ({
+        stageId: schedule.stage_id,
+        startTime: dayjs.unix(schedule.start_time).toDate(),
+        endTime: dayjs.unix(schedule.end_time).toDate(),
+        rareWeapon: schedule.rare_weapon,
+        weaponList: schedule.weapon_list,
+      })),
+    });
+  }
 }

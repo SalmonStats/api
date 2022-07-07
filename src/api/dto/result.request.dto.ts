@@ -323,7 +323,7 @@ class WaveResult {
   quota_num: number;
 }
 
-export class Result {
+export class UploadResult {
   @ApiProperty()
   @ValidateNested()
   @Type(() => BossCounts)
@@ -419,11 +419,11 @@ export class Result {
 }
 
 export class UploadResults {
-  @ApiProperty({ type: [Result], minItems: 1, maxItems: 50 })
+  @ApiProperty({ type: [UploadResult], minItems: 1, maxItems: 50 })
   @IsArray()
   @ArrayNotEmpty()
   @ArrayMaxSize(50)
   @ValidateNested({ each: true })
-  @Type(() => Result)
-  results: Result[];
+  @Type(() => UploadResult)
+  results: UploadResult[];
 }

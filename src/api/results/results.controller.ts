@@ -30,6 +30,7 @@ import {
 import { UploadResults as UploadedResultsModel } from '../dto/result.request.dto';
 import { RestoreResults as RestoreResultsModel } from '../dto/restore.request.dto';
 import { ResultsService } from './results.service';
+import { UploadStatus } from './results.status';
 
 @Controller('results')
 @ApiExtraModels(PaginatedDto)
@@ -52,8 +53,8 @@ export class ResultsController {
   @ApiNotFoundResponse()
   create(
     @Body(new ValidationPipe({ transform: true }))
-    request: UploadedResultsModel | RestoreResultsModel
-  ) {
+    request: UploadedResultsModel
+  ): Promise<UploadStatus[]> {
     return this.service.upsert(request);
   }
 }
