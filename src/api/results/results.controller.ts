@@ -54,6 +54,6 @@ export class ResultsController {
     @Body(new ValidationPipe({ transform: true }))
     request: UploadedResultsModel | RestoreResultsModel
   ) {
-    return this.service.create(request);
+    return this.service.upsert(request);
   }
 }

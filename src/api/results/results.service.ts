@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import dayjs from 'dayjs';
 import { PrismaService } from 'src/prisma.service';
 import {
   RestorePlayer,
@@ -19,19 +20,64 @@ export class ResultsService {
 
   findMany() {}
 
-  create(request: UploadResultsModel | RestoreResultsModel) {
+  upsert(request: UploadResultsModel | RestoreResultsModel) {
     return this.restore(request as RestoreResultsModel);
   }
 
   private restore(request: RestoreResultsModel) {
     const results: RestoreResult[] = request.results;
-    return this.prisma.result.createMany({
-      data: [],
-      skipDuplicates: true,
+    results.forEach(async (result) => {
+      const salmonId = await this.getSalmonId(result);
+      if (salmonId === null) {
+        console.log('Created');
+        this.create(result);
+      } else {
+        console.log('Updated');
+        this.update(salmonId, result);
+      }
     });
   }
 
-  private result(result: RestoreResult): Prisma.ResultCreateInput {
+  // リザルトIDを取得する
+  private async getSalmonId(result: RestoreResult): Promise<number> {
+    return (
+      await this.prisma.result.findFirst({
+        where: {
+          startTime: {
+            lte: dayjs(result.play_time).add(10, 'second').toDate(),
+            gte: dayjs(result.play_time).subtract(10, 'second').toDate(),
+          },
+          members: {
+            equals: result.members,
+          },
+        },
+      })
+    )?.salmonId;
+  }
+
+  private update(salmonId: number, result: RestoreResult) {
+    this.prisma.result.update({
+      where: {
+        salmonId: salmonId,
+      },
+      data: {
+        bossCounts: result.boss_counts,
+        bossKillCounts: result.boss_kill_counts,
+        goldenIkuraNum: result.golden_ikura_num,
+        noNightWaves: result.no_night_waves,
+        ikuraNum: result.ikura_num,
+        dangerRate: result.danger_rate,
+        playTime: result.play_time,
+        members: result.members,
+        players: this.players(result.players),
+        waves: this.waves(result.waves),
+        schedule: this.schedule(result.schedule),
+        jobResult: this.jobResult(result.job_result),
+      },
+    });
+  }
+
+  private create(result: RestoreResult): Prisma.ResultCreateInput {
     return {
       bossCounts: result.boss_counts,
       bossKillCounts: result.boss_kill_counts,
@@ -43,8 +89,8 @@ export class ResultsService {
       members: result.members,
       players: this.players(result.players),
       waves: this.waves(result.waves),
-      jobResult: this.jobResult(result.job_result),
       schedule: this.schedule(result.schedule),
+      jobResult: this.jobResult(result.job_result),
     };
   }
 
