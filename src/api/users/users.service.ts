@@ -6,6 +6,7 @@ import snakecaseKeys from 'snakecase-keys';
 import { PrismaService } from 'src/prisma.service';
 import { PaginatedRequestDtoForUser } from '../dto/pagination.dto';
 import { Result as CoopResult } from '../dto/result.response.dto';
+import { UsersRequestDto } from '../dto/users.request.dto';
 import { NicknameAndIconRequestDto } from '../nickname_and_icon/nickname_and_icon.request';
 import { NicknameAndIcon } from '../nickname_and_icon/nickname_and_icon.response';
 import { NicknameAndIconService } from '../nickname_and_icon/nickname_and_icon.service';
@@ -270,5 +271,37 @@ export class UsersService {
     const response = new UserStats(results[0], nicknameAndIcons);
 
     return response;
+  }
+
+  create(request: UsersRequestDto) {
+    return this.prisma.user.upsert({
+      where: {
+        uid: request.uid,
+      },
+      create: {
+        uid: request.uid,
+        name: request.name,
+        screenName: request.screenName,
+        thumbnailURL: request.thumbnailURL,
+        accounts: {
+          connectOrCreate: {
+            where: {
+              nsaid: request.account.nsaid,
+            },
+            create: {
+              nsaid: request.account.nsaid,
+              nickname: request.account.nickname,
+              friendCode: request.account.friendCode,
+              thumbnailURL: request.thumbnailURL,
+            },
+          },
+        },
+      },
+      update: {
+        name: request.name,
+        screenName: request.screenName,
+        thumbnailURL: request.thumbnailURL,
+      },
+    });
   }
 }

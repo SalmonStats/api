@@ -40,7 +40,7 @@ export class PaginatedRequestDto {
   @ApiProperty({
     title: 'limit',
     minimum: 0,
-    maximum: 200,
+    maximum: 1000,
     default: 25,
   })
   readonly limit: number;
@@ -89,7 +89,7 @@ export class PaginatedRequestDtoForResult extends PaginatedRequestDto {
   @ApiProperty({
     title: '',
     description: '詳細データを含むかどうか',
-    default: false,
+    default: true,
   })
   @Expose()
   @Transform((params) => {

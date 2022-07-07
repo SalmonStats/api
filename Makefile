@@ -2,7 +2,7 @@ include .env
 
 .PHONY: dev
 dev:
-	yarn start:dev
+	yarn start:dev	
 
 .PHONY: prod
 prod:
@@ -24,7 +24,7 @@ push:
 db:
 	docker run --rm \
 	-p 5432:5432 \
-	-e POSTGRES_USER=tkgstrator \
-	-e POSTGRES_PASSWORD=123456 \
-	-e POSTGRES_DB=sp2dev \
-	postgres:14.4 
+	-e POSTGRES_USER=linpostgres \
+	-e POSTGRES_PASSWORD=Ssf8HA3K8ba \
+	-e POSTGRES_DB=splatoon2 \
+	postgres:14.2

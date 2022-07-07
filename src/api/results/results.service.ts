@@ -1,270 +1,147 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
 import {
-  EventType,
-  PlayerResult,
-  Result as UploadedResultModel,
-  Results as UploadedResultsModel,
-  StageType,
-  WaterLevel,
-} from '../dto/result.request.dto';
-import dayjs from 'dayjs';
-import { Status, UploadResult, UploadResults } from './results.status';
-import { PaginatedDto } from '../dto/pagination.dto';
-import { plainToClass } from 'class-transformer';
-import { Result as ResultDto } from '../dto/result.response.dto';
-const { transpose } = require('matrix-transpose');
-const snakecaseKeys = require('snakecase-keys');
+  RestorePlayer,
+  RestoreResult,
+  RestoreResults as RestoreResultsModel,
+  RestoreSchedule,
+  RestoreWave,
+} from '../dto/restore.request.dto';
+import { UploadResults as UploadResultsModel } from '../dto/result.request.dto';
+import { JobResult } from '../dto/result.response.dto';
 
 @Injectable()
 export class ResultsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async find(salmonId: number): Promise<ResultDto> {
-    try {
-      const result = await this.prisma.result.findUnique({
-        where: {
-          salmonId: salmonId,
-        },
-        include: {
-          players: true,
-          waves: true,
-          jobResult: true,
-        },
-        rejectOnNotFound: true,
-      });
-      return plainToClass(ResultDto, snakecaseKeys(result), {
-        excludeExtraneousValues: true,
-        exposeUnsetFields: false,
-      });
-    } catch (error) {
-      throw new NotFoundException();
-    }
+  find() {}
+
+  findMany() {}
+
+  create(request: UploadResultsModel | RestoreResultsModel) {
+    return this.restore(request as RestoreResultsModel);
   }
 
-  async findMany(
-    request: Prisma.ResultFindManyArgs
-  ): Promise<PaginatedDto<ResultDto>> {
-    const response = new PaginatedDto<ResultDto>();
-    const results = this.prisma.result.findMany(request);
-    response.total = await this.prisma.result.count({
-      where: request.where,
+  private restore(request: RestoreResultsModel) {
+    const results: RestoreResult[] = request.results;
+    return this.prisma.result.createMany({
+      data: [],
+      skipDuplicates: true,
     });
-    response.limit = request.take;
-    response.offset = request.skip;
-    response.results = (await results).map((result) =>
-      plainToClass(ResultDto, snakecaseKeys(result), {
-        excludeExtraneousValues: true,
-        exposeUnsetFields: false,
-      })
-    );
-    return response;
   }
 
-  // 重複しているリザルトIDを返す
-  // 新規リザルトであればnullを返す
-  async getResultSalmonId(result: UploadedResultModel): Promise<number> {
-    const members: string[] = result.other_results
-      .concat([result.my_result])
-      .map((player) => player.pid)
-      .sort();
-    try {
-      return (
-        await this.prisma.result.findFirst({
-          where: {
-            playTime: {
-              lte: dayjs(result.play_time).add(10, 'second').toDate(),
-              gte: dayjs(result.play_time).subtract(10, 'second').toDate(),
-            },
-            members: {
-              equals: members,
-            },
-          },
-        })
-      ).salmonId;
-    } catch (error) {
-      return null;
-    }
+  private result(result: RestoreResult): Prisma.ResultCreateInput {
+    return {
+      bossCounts: result.boss_counts,
+      bossKillCounts: result.boss_kill_counts,
+      goldenIkuraNum: result.golden_ikura_num,
+      noNightWaves: result.no_night_waves,
+      ikuraNum: result.ikura_num,
+      dangerRate: result.danger_rate,
+      playTime: result.play_time,
+      members: result.members,
+      players: this.players(result.players),
+      waves: this.waves(result.waves),
+      jobResult: this.jobResult(result.job_result),
+      schedule: this.schedule(result.schedule),
+    };
   }
 
-  async createResult(result: UploadedResultModel): Promise<number> {
-    const boss_counts: number[] = Object.values(result.boss_counts).map(
-      (value) => value.count
-    );
-    const players: PlayerResult[] = result.other_results.concat([
-      result.my_result,
-    ]);
-    const boss_kill_counts = transpose(
-      players.map((player) =>
-        Object.values(player.boss_kill_counts).map((value) => value.count)
-      )
-    ).map((value) => value.reduce((prev, next) => prev + next, 0));
-    const members = players.map((player) => player.pid).sort();
-    if (new Set(members).size !== members.length) {
-      throw new BadRequestException();
-    }
-    const response = await this.prisma.result.create({
-      data: {
-        bossCounts: boss_counts,
-        bossKillCounts: boss_kill_counts,
-        goldenIkuraNum: result.wave_details
-          .map((wave) => wave.golden_ikura_num)
-          .reduce((prev, next) => prev + next, 0),
-        ikuraNum: result.wave_details
-          .map((wave) => wave.ikura_num)
-          .reduce((prev, next) => prev + next, 0),
-        noNightWaves: result.wave_details.every(
-          (wave) => Object.values(EventType).indexOf(wave.event_type.key) == 0
-        ),
-        schedule: {
-          connectOrCreate: {
-            where: {
-              startTime_endTime: {
-                startTime: result.start_time,
-                endTime: result.end_time,
-              },
-            },
-            create: {
-              stageId:
-                Object.values(StageType).indexOf(result.schedule.stage.image) +
-                5000,
-              startTime: result.start_time,
-              endTime: result.end_time,
-              weaponList: result.schedule.weapons.map((weapon) => weapon.id),
-            },
-          },
-        },
-        dangerRate: result.danger_rate,
-        playTime: result.play_time,
-        jobResult: {
-          create: {
-            failureReason: result.job_result.failure_reason,
-            failureWave: result.job_result.failure_wave,
-            isClear: result.job_result.is_clear,
-          },
-        },
-        players: {
-          create: players.map((player) => {
-            return {
-              name: player.name,
-              nsaid: player.pid,
-              bossKillCounts: Object.values(player.boss_kill_counts).map(
-                (value) => value.count
-              ),
-              deadCount: player.dead_count,
-              helpCount: player.help_count,
-              goldenIkuraNum: player.golden_ikura_num,
-              ikuraNum: player.ikura_num,
-              style: player.player_type.style,
-              species: player.player_type.species,
-              specialId: player.special.id,
-              weaponList: player.weapon_list.map((value) => value.id),
-              specialCounts: player.special_counts,
-              jobId: result.my_result.pid == player.pid ? result.job_id : null,
-              jobScore:
-                result.my_result.pid == player.pid ? result.job_score : null,
-              kumaPoint:
-                result.my_result.pid == player.pid ? result.kuma_point : null,
-              jobRate:
-                result.my_result.pid == player.pid ? result.job_rate : null,
-              gradeId:
-                result.my_result.pid == player.pid ? result.grade.id : null,
-              gradePoint:
-                result.my_result.pid == player.pid ? result.grade_point : null,
-              gradePointDelta:
-                result.my_result.pid == player.pid
-                  ? result.grade_point_delta
-                  : null,
-            };
-          }),
-        },
-        members: members,
-        waves: {
-          create: result.wave_details.map((wave) => {
-            return {
-              waveId: result.wave_details.indexOf(wave),
-              eventType: Object.values(EventType).indexOf(wave.event_type.key),
-              waterLevel: Object.values(WaterLevel).indexOf(
-                wave.water_level.key
-              ),
-              goldenIkuraNum: wave.golden_ikura_num,
-              goldenIkuraPopNum: wave.golden_ikura_pop_num,
-              ikuraNum: wave.ikura_num,
-              quotaNum: wave.quota_num,
-              failureReason:
-                result.job_result.failure_wave ==
-                result.wave_details.indexOf(wave) + 1
-                  ? result.job_result.failure_reason.valueOf()
-                  : null,
-              isClear: !(
-                result.job_result.failure_wave ==
-                result.wave_details.indexOf(wave) + 1
-              ),
-            };
-          }),
-        },
+  private createPlayer(
+    player: RestorePlayer
+  ): Prisma.PlayerCreateWithoutResultInput {
+    return {
+      nsaid: player.nsaid,
+      bossKillCounts: player.boss_kill_counts,
+      deadCount: player.dead_count,
+      goldenIkuraNum: player.golden_ikura_num,
+      helpCount: player.help_count,
+      ikuraNum: player.ikura_num,
+      jobId: player.job_id,
+      jobScore: player.job_score,
+      jobRate: player.job_rate,
+      kumaPoint: player.kuma_point,
+      gradeId: player.grade_id,
+      gradePoint: player.grade_point,
+      gradePointDelta: player.grade_point_delta,
+      name: player.name,
+      species: player.species,
+      style: player.style,
+      specialId: player.special_id,
+      specialCounts: player.special_counts,
+      weaponList: player.weapon_list,
+    };
+  }
+
+  private players(
+    players: RestorePlayer[]
+  ): Prisma.PlayerCreateNestedManyWithoutResultInput {
+    return {
+      createMany: {
+        data: players.map((player) => this.createPlayer(player)),
       },
-    });
-    return response.salmonId;
+    };
   }
 
-  async updateResult(
-    salmonId: number,
-    result: UploadedResultModel
-  ): Promise<number> {
-    try {
-      return (
-        await this.prisma.result.update({
-          where: {
-            salmonId: salmonId,
-          },
-          data: {
-            players: {
-              update: {
-                where: {
-                  resultId_nsaid: {
-                    resultId: salmonId,
-                    nsaid: result.my_result.pid,
-                  },
-                },
-                data: {
-                  jobId: result.job_id,
-                  jobScore: result.job_score,
-                  kumaPoint: result.kuma_point,
-                  jobRate: result.job_rate,
-                  gradeId: result.grade.id,
-                  gradePoint: result.grade_point,
-                  gradePointDelta: result.grade_point_delta,
-                },
-              },
-            },
-          },
-        })
-      ).salmonId;
-    } catch (error) {
-      throw new InternalServerErrorException(null, 'Could not update result.');
-    }
+  private createWave(
+    wave: RestoreWave,
+    index: number,
+    failureReason: string,
+    isClear: boolean
+  ): Prisma.WaveCreateWithoutResultInput {
+    return {
+      waveId: index,
+      eventType: wave.event_type,
+      waterLevel: wave.water_level,
+      goldenIkuraNum: wave.golden_ikura_num,
+      ikuraNum: wave.ikura_num,
+      goldenIkuraPopNum: wave.golden_ikura_pop_num,
+      quotaNum: wave.quota_num,
+      failureReason: failureReason,
+      isClear: isClear,
+    };
   }
 
-  async create(request: UploadedResultsModel): Promise<UploadResults> {
-    const results = await Promise.all(
-      request.results.map(async (result) => {
-        const salmonId = await this.getResultSalmonId(result);
-        if (salmonId == null) {
-          const salmonId = await this.createResult(result);
-          return new UploadResult(salmonId, Status.Created);
-        } else {
-          await this.updateResult(salmonId, result);
-          return new UploadResult(salmonId, Status.Updated);
-        }
-      })
-    );
-    return new UploadResults(results);
+  private waves(
+    waves: RestoreWave[]
+  ): Prisma.WaveCreateNestedManyWithoutResultInput {
+    return {
+      createMany: {
+        // 仮調整
+        data: waves.map((wave, index) => {
+          return this.createWave(wave, index, null, true);
+        }),
+      },
+    };
+  }
+
+  private jobResult(
+    result: JobResult
+  ): Prisma.JobResultCreateNestedOneWithoutResultInput {
+    return {
+      create: {
+        failureReason: result.failure_reason,
+        failureWave: result.failure_wave,
+        isClear: result.is_clear,
+      },
+    };
+  }
+
+  private schedule(
+    schedule: RestoreSchedule
+  ): Prisma.ScheduleCreateOrConnectWithoutResultsInput {
+    return {
+      where: {
+        startTime: schedule.start_time,
+      },
+      create: {
+        startTime: schedule.start_time,
+        stageId: schedule.stage_id,
+        endTime: schedule.end_time,
+        weaponList: schedule.weapon_list,
+        rareWeapon: null,
+      },
+    };
   }
 }

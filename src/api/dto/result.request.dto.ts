@@ -1,5 +1,4 @@
-import { ParseEnumPipe } from '@nestjs/common';
-import { ApiInternalServerErrorResponse, ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Transform, Type } from 'class-transformer';
 import {
   ArrayMaxSize,
@@ -63,11 +62,6 @@ export enum StageType {
   SHAKELIFT = '/images/coop_stage/e9f7c7b35e6d46778cd3cbc0d89bd7e1bc3be493.png',
   SHAKERIDE = '/images/coop_stage/50064ec6e97aac91e70df5fc2cfecf61ad8615fd.png',
 }
-
-// interface EnumType<T> {
-//   key: T;
-//   name: string;
-// }
 
 class EnumType<T> {
   @ApiProperty({ type: String })
@@ -424,7 +418,7 @@ export class Result {
   wave_details: WaveResult[];
 }
 
-export class Results {
+export class UploadResults {
   @ApiProperty({ type: [Result], minItems: 1, maxItems: 50 })
   @IsArray()
   @ArrayNotEmpty()

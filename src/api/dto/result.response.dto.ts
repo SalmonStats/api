@@ -116,6 +116,26 @@ export class Player implements PlayerResultType {
   grade_point_delta: number;
 
   @Expose()
+  @ApiProperty({ description: 'クマサンポイント' })
+  kuma_point: number;
+
+  @Expose()
+  @ApiProperty({ description: 'ジョブスコア' })
+  job_score: number;
+
+  @Expose()
+  @ApiProperty({ description: '性別' })
+  style: string;
+
+  @Expose()
+  @ApiProperty({ description: '種族' })
+  species: string;
+
+  @Expose()
+  @ApiProperty({ description: 'ジョブレート' })
+  job_rate: number;
+
+  @Expose()
   @ApiProperty({ description: '支給スペシャル' })
   special_id: number;
 
@@ -249,6 +269,11 @@ export class Result {
   job_result: JobResult;
 
   @Expose()
+  @Type(() => Schedule)
+  @ApiProperty({ type: Schedule, description: 'スケジュール' })
+  schedule: Schedule;
+
+  @Expose()
   @Type(() => Player)
   @ApiProperty({ type: [Player], description: 'プレイヤーリザルト' })
   players: Player[];
@@ -257,9 +282,4 @@ export class Result {
   @Type(() => Wave)
   @ApiProperty({ type: [Wave], description: 'WAVEリザルト' })
   waves: Wave[];
-
-  @Expose()
-  @Type(() => Schedule)
-  @ApiProperty({ type: Schedule, description: 'スケジュール' })
-  schedule: Schedule;
 }
