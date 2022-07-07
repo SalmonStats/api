@@ -4,6 +4,7 @@ import { Type } from 'class-transformer';
 export enum Status {
   Created = 'created',
   Updated = 'updated',
+  NotAllowed = 'not allowed',
 }
 
 export class UploadStatus {

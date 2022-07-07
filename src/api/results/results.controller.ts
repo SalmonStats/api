@@ -40,16 +40,15 @@ export class ResultsController {
   @Get(':salmon_id')
   @ApiParam({ name: 'salmon_id', type: 'integer', description: 'リザルトID' })
   @ApiTags('リザルト')
-  @ApiOperation({ operationId: '削除' })
+  @ApiOperation({ operationId: '取得' })
   @ApiNotFoundResponse()
   find() {
     return this.service.find();
   }
 
   @Post('')
-  @ApiParam({ name: 'salmon_id', type: 'integer', description: 'リザルトID' })
   @ApiTags('リザルト')
-  @ApiOperation({ operationId: '削除' })
+  @ApiOperation({ operationId: '登録' })
   @ApiNotFoundResponse()
   create(
     @Body(new ValidationPipe({ transform: true }))
