@@ -55,6 +55,23 @@ paths:
           description: ''
       tags:
         - ユーザー
+    post:
+      operationId: 登録
+      summary: ''
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsersRequestDto'
+      responses:
+        '200':
+          description: ''
+        '404':
+          description: ''
+      tags:
+        - ユーザー
   /v1/stats/{start_time}:
     get:
       operationId: 統計取得
@@ -170,6 +187,22 @@ paths:
           description: ''
       tags:
         - シフト記録
+  /v1/restore:
+    post:
+      operationId: 復元
+      summary: ''
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RestoreResults'
+      responses:
+        '404':
+          description: ''
+      tags:
+        - リザルト
   /v1/system:
     get:
       operationId: サーバー情報
@@ -183,42 +216,6 @@ paths:
   /v1/results/{salmon_id}:
     get:
       operationId: 取得
-      summary: ''
-      parameters:
-        - name: salmon_id
-          required: true
-          in: path
-          description: リザルトID
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Result'
-        '404':
-          description: ''
-      tags:
-        - リザルト
-    put:
-      operationId: 更新
-      summary: ''
-      parameters:
-        - name: salmon_id
-          required: true
-          in: path
-          description: リザルトID
-          schema:
-            type: integer
-      responses:
-        '404':
-          description: ''
-      tags:
-        - リザルト
-    delete:
-      operationId: 削除
       summary: ''
       parameters:
         - name: salmon_id
@@ -260,13 +257,6 @@ paths:
           description: 詳細データを含むかどうか
           schema:
             title: ''
-            default: false
-            type: boolean
-        - name: order
-          required: true
-          in: query
-          schema:
-            title: order
             default: true
             type: boolean
         - name: start_time
@@ -312,19 +302,8 @@ paths:
             title: ''
             type: number
       responses:
-        '200':
+        '404':
           description: ''
-          content:
-            application/json:
-              schema:
-                title: PaginatedResponseOfResult
-                allOf:
-                  - $ref: '#/components/schemas/PaginatedDto'
-                  - properties:
-                      results:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/Result'
       tags:
         - リザルト
     post:
@@ -336,15 +315,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Results'
+              $ref: '#/components/schemas/UploadResults'
       responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UploadResults'
-        '400':
+        '404':
           description: ''
       tags:
         - リザルト
@@ -432,7 +405,32 @@ paths:
       operationId: 取得
       summary: ''
       description: スケジュールを取得します
-      parameters: []
+      parameters:
+        - name: offset
+          required: true
+          in: query
+          schema:
+            minimum: 0
+            title: offset
+            default: 0
+            type: number
+        - name: limit
+          required: true
+          in: query
+          schema:
+            minimum: 0
+            maximum: 200
+            title: limit
+            default: 25
+            type: number
+        - name: include_futures
+          required: true
+          in: query
+          description: 未リリースのデータを含むかどうか
+          schema:
+            title: ''
+            default: true
+            type: boolean
       responses:
         '200':
           description: ''
@@ -483,11 +481,7 @@ paths:
 info:
   title: Salmon Stats API Documents
   description: ''
-<<<<<<< HEAD
-  version: 1.0.6
-=======
-  version: 1.0.6.1
->>>>>>> 320482c (- システム情報取得に対応)
+  version: 1.0.3.8
   contact: {}
 tags: []
 servers: []
@@ -495,108 +489,7 @@ components:
   schemas:
     Result:
       type: object
-      properties:
-        salmon_id:
-          type: number
-          description: リザルトID
-        boss_counts:
-          example:
-            - 0
-            - 0
-            - 0
-            - 0
-            - 0
-            - 0
-            - 0
-            - 0
-            - 0
-          description: オオモノ出現数
-          type: array
-          items:
-            type: number
-        boss_kill_counts:
-          example:
-            - 0
-            - 0
-            - 0
-            - 0
-            - 0
-            - 0
-            - 0
-            - 0
-            - 0
-          description: オオモノ討伐数
-          type: array
-          items:
-            type: number
-        golden_ikura_num:
-          type: number
-          description: 金イクラ数
-        ikura_num:
-          type: number
-          description: 赤イクラ数
-        no_night_waves:
-          type: boolean
-          description: 夜WAVEを含むかどうか
-        danger_rate:
-          type: number
-          description: キケン度
-        end_time:
-          format: date-time
-          type: string
-          description: シフト終了時刻
-        play_time:
-          format: date-time
-          type: string
-          description: プレイ時刻
-        start_time:
-          format: date-time
-          type: string
-          description: シフト開始時刻
-        members:
-          example:
-            - '0000000000000000'
-            - '1111111111111111'
-            - '2222222222222222'
-            - '3333333333333333'
-          description: チームメンバー(ソート済み)
-          type: array
-          items:
-            type: string
-        job_result:
-          description: バイト結果
-          allOf:
-            - $ref: '#/components/schemas/JobResult'
-        players:
-          description: プレイヤーリザルト
-          type: array
-          items:
-            $ref: '#/components/schemas/Player'
-        waves:
-          description: WAVEリザルト
-          type: array
-          items:
-            $ref: '#/components/schemas/Wave'
-        schedule:
-          description: スケジュール
-          allOf:
-            - $ref: '#/components/schemas/Schedule'
-      required:
-        - salmon_id
-        - boss_counts
-        - boss_kill_counts
-        - golden_ikura_num
-        - ikura_num
-        - no_night_waves
-        - danger_rate
-        - end_time
-        - play_time
-        - start_time
-        - members
-        - job_result
-        - players
-        - waves
-        - schedule
+      properties: {}
     StageResult:
       type: object
       properties:
@@ -666,6 +559,50 @@ components:
         - grade_point
         - stage_results
         - results
+    Account:
+      type: object
+      properties:
+        nsaid:
+          type: string
+          default: '0000000000000000'
+        nickname:
+          type: string
+          default: すたーらいとえむいー
+        thumbnailURL:
+          type: string
+          default: >-
+            https://cdn-image-e0d67c509fb203858ebcb2fe3f88c2aa.baas.nintendo.com/1/b007cfc98eed87c2
+        friendCode:
+          type: string
+          default: 0000-0000-0000
+      required:
+        - nsaid
+        - nickname
+        - thumbnailURL
+        - friendCode
+    UsersRequestDto:
+      type: object
+      properties:
+        uid:
+          type: string
+          default: '0000000000000000'
+        account:
+          $ref: '#/components/schemas/Account'
+        name:
+          type: string
+          default: みなかみはちみ
+        screenName:
+          type: string
+          default: tkgling
+        thumbnailURL:
+          type: string
+          default: >-
+            https://pbs.twimg.com/profile_images/1544579876275245057/km4scupk_400x400.jpg
+      required:
+        - uid
+        - account
+        - name
+        - screenName
     NicknameAndIcon:
       type: object
       properties:
@@ -688,6 +625,204 @@ components:
             $ref: '#/components/schemas/NicknameAndIcon'
       required:
         - nickname_and_icons
+    JobResult:
+      type: object
+      properties:
+        failure_wave:
+          type: number
+          example: 1
+        failure_reason:
+          type: string
+          enum:
+            - time_limit
+            - wipe_out
+          example: time_limit
+        is_clear:
+          type: boolean
+          example: false
+      required:
+        - failure_wave
+        - failure_reason
+        - is_clear
+    RestorePlayer:
+      type: object
+      properties:
+        nsaid:
+          type: string
+        name:
+          type: string
+        boss_kill_counts:
+          type: array
+          items:
+            type: string
+        dead_count:
+          type: number
+        help_count:
+          type: number
+        golden_ikura_num:
+          type: number
+        ikura_num:
+          type: number
+        job_id:
+          type: number
+        job_score:
+          type: number
+        job_rate:
+          type: number
+        kuma_point:
+          type: number
+        style:
+          type: string
+        species:
+          type: string
+        grade_id:
+          type: number
+        grade_point:
+          type: number
+        grade_point_delta:
+          type: number
+        special_id:
+          type: number
+        special_counts:
+          type: array
+          items:
+            type: string
+        weapon_list:
+          type: array
+          items:
+            type: string
+      required:
+        - nsaid
+        - name
+        - boss_kill_counts
+        - dead_count
+        - help_count
+        - golden_ikura_num
+        - ikura_num
+        - job_id
+        - job_score
+        - job_rate
+        - kuma_point
+        - style
+        - species
+        - grade_id
+        - grade_point
+        - grade_point_delta
+        - special_id
+        - special_counts
+        - weapon_list
+    RestoreSchedule:
+      type: object
+      properties:
+        stage_id:
+          type: number
+        start_time:
+          format: date-time
+          type: string
+        end_time:
+          format: date-time
+          type: string
+        weapon_list:
+          type: array
+          items:
+            type: string
+      required:
+        - stage_id
+        - start_time
+        - end_time
+        - weapon_list
+    RestoreWave:
+      type: object
+      properties:
+        event_type:
+          type: number
+        water_level:
+          type: number
+        golden_ikura_num:
+          type: number
+        golden_ikura_pop_num:
+          type: number
+        quota_num:
+          type: number
+        ikura_num:
+          type: number
+      required:
+        - event_type
+        - water_level
+        - golden_ikura_num
+        - golden_ikura_pop_num
+        - quota_num
+        - ikura_num
+    RestoreResult:
+      type: object
+      properties:
+        boss_counts:
+          type: array
+          items:
+            type: string
+        boss_kill_counts:
+          type: array
+          items:
+            type: string
+        no_night_waves:
+          type: boolean
+        danger_rate:
+          type: number
+        golden_ikura_num:
+          type: number
+        ikura_num:
+          type: number
+        play_time:
+          format: date-time
+          type: string
+        start_time:
+          format: date-time
+          type: string
+        end_time:
+          format: date-time
+          type: string
+        members:
+          type: array
+          items:
+            type: string
+        job_result:
+          $ref: '#/components/schemas/JobResult'
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/RestorePlayer'
+        schedule:
+          $ref: '#/components/schemas/RestoreSchedule'
+        waves:
+          type: array
+          items:
+            $ref: '#/components/schemas/RestoreWave'
+      required:
+        - boss_counts
+        - boss_kill_counts
+        - no_night_waves
+        - danger_rate
+        - golden_ikura_num
+        - ikura_num
+        - play_time
+        - start_time
+        - end_time
+        - members
+        - job_result
+        - players
+        - schedule
+        - waves
+    RestoreResults:
+      type: object
+      properties:
+        results:
+          minItems: 1
+          maxItems: 200
+          type: array
+          items:
+            $ref: '#/components/schemas/RestoreResult'
+      required:
+        - results
     PaginatedDto:
       type: object
       properties:
@@ -704,202 +839,280 @@ components:
         - total
         - limit
         - offset
-    JobResult:
+    EnumType:
       type: object
       properties:
-        failure_reason:
+        key:
           type: string
-          enum:
-            - time_limit
-            - wipe_out
-          nullable: true
-          example: null
-          description: バイト失敗理由
-        failure_wave:
-          type: number
-          nullable: true
-          example: null
-          description: バイト失敗WAVE数
-        is_clear:
-          type: boolean
-          example: true
-          description: クリアしたかどうか
-      required:
-        - failure_reason
-        - failure_wave
-        - is_clear
-    Player:
-      type: object
-      properties:
-        nsaid:
-          type: string
-          example: '0000000000000000'
-          description: プレイヤーID
         name:
           type: string
-          example: tkgling
-          description: プレイヤー名
-        job_id:
+      required:
+        - key
+        - name
+    BossCount:
+      type: object
+      properties:
+        boss:
+          $ref: '#/components/schemas/EnumType'
+        count:
           type: number
-          description: バイト回数
+      required:
+        - boss
+        - count
+    BossCounts:
+      type: object
+      properties:
+        '3':
+          $ref: '#/components/schemas/BossCount'
+        '6':
+          $ref: '#/components/schemas/BossCount'
+        '9':
+          $ref: '#/components/schemas/BossCount'
+        '12':
+          $ref: '#/components/schemas/BossCount'
+        '13':
+          $ref: '#/components/schemas/BossCount'
+        '14':
+          $ref: '#/components/schemas/BossCount'
+        '15':
+          $ref: '#/components/schemas/BossCount'
+        '16':
+          $ref: '#/components/schemas/BossCount'
+        '21':
+          $ref: '#/components/schemas/BossCount'
+      required:
+        - '3'
+        - '6'
+        - '9'
+        - '12'
+        - '13'
+        - '14'
+        - '15'
+        - '16'
+        - '21'
+    Grade:
+      type: object
+      properties:
+        id:
+          type: number
+        long_name:
+          type: string
+        short_name:
+          type: string
+      required:
+        - id
+        - long_name
+        - short_name
+    PlayerType:
+      type: object
+      properties:
+        style:
+          type: string
+          enum:
+            - girl
+            - boy
+        species:
+          type: string
+          enum:
+            - inklings
+            - octolings
+      required:
+        - style
+        - species
+    Special:
+      type: object
+      properties:
+        id:
+          type: number
+        image_a:
+          type: string
+        image_b:
+          type: string
+      required:
+        - id
+        - image_a
+        - image_b
+    Weapon:
+      type: object
+      properties:
+        id:
+          type: number
+      required:
+        - id
+    WeaponList:
+      type: object
+      properties:
+        id:
+          type: number
+        weapon:
+          $ref: '#/components/schemas/Weapon'
+      required:
+        - id
+        - weapon
+    PlayerResult:
+      type: object
+      properties:
         boss_kill_counts:
-          example:
-            - 0
-            - 0
-            - 0
-            - 0
-            - 0
-            - 0
-            - 0
-            - 0
-            - 0
-          description: オオモノ討伐数
-          type: array
-          items:
-            type: number
+          $ref: '#/components/schemas/BossCounts'
         dead_count:
           type: number
-          description: 被救助数
         golden_ikura_num:
           type: number
-          description: 金イクラ数
         help_count:
           type: number
-          description: 救助数
         ikura_num:
           type: number
-          description: 赤イクラ数
-        grade_id:
-          type: number
-          description: 評価
-        grade_point:
-          type: number
-          description: 評価レート
-        grade_point_delta:
-          type: number
-          description: 評価レート変動
-        special_id:
-          type: number
-          description: 支給スペシャル
-        special_counts:
-          description: スペシャル使用回数
-          type: array
-          items:
-            type: number
+        name:
+          type: string
+        pid:
+          type: string
+        player_type:
+          $ref: '#/components/schemas/PlayerType'
+        special:
+          $ref: '#/components/schemas/Special'
         weapon_list:
-          description: 支給ブキ
           type: array
           items:
-            type: number
+            $ref: '#/components/schemas/WeaponList'
+        special_counts:
+          type: array
+          items:
+            type: string
       required:
-        - nsaid
-        - name
-        - job_id
         - boss_kill_counts
         - dead_count
         - golden_ikura_num
         - help_count
         - ikura_num
-        - grade_id
-        - grade_point
-        - grade_point_delta
-        - special_id
-        - special_counts
+        - name
+        - pid
+        - player_type
+        - special
         - weapon_list
-    Wave:
+        - special_counts
+    EnumImageType:
       type: object
       properties:
-        event_type:
-          type: number
-          description: イベント
-        water_level:
-          type: number
-          description: 潮位
-        golden_ikura_num:
-          type: number
-          description: 金イクラ数
-        golden_ikura_pop_num:
-          type: number
-          description: 金イクラドロップ数
-        quota_num:
-          type: number
-          description: 金イクラノルマ数
-        ikura_num:
-          type: number
-          description: 赤イクラ数
+        image:
+          type: object
+        name:
+          type: string
       required:
-        - event_type
-        - water_level
-        - golden_ikura_num
-        - golden_ikura_pop_num
-        - quota_num
-        - ikura_num
+        - image
+        - name
     Schedule:
       type: object
       properties:
         start_time:
           format: date-time
           type: string
-          description: シフト開始時刻
-        stage_id:
-          type: string
-          enum:
-            - SHAKEUP
-            - SHAKESHIP
-            - SHAKEHOUSE
-            - SHAKELIFT
-            - SHAKELIDE
-          example: 5000
-          description: ステージID
         end_time:
           format: date-time
           type: string
-          description: シフト終了時刻
-        rare_weapon:
-          type: number
-          nullable: true
-          default: null
-          description: 支給レアブキ
-        weapon_list:
-          description: 支給ブキリスト
+        stage:
+          $ref: '#/components/schemas/EnumImageType'
+        weapons:
           type: array
           items:
-            type: number
+            type: string
       required:
         - start_time
-        - stage_id
         - end_time
-        - rare_weapon
-        - weapon_list
-    Results:
+        - stage
+        - weapons
+    WaveResult:
+      type: object
+      properties:
+        water_level:
+          $ref: '#/components/schemas/EnumType'
+        event_type:
+          $ref: '#/components/schemas/EnumType'
+        golden_ikura_num:
+          type: number
+        golden_ikura_pop_num:
+          type: number
+        ikura_num:
+          type: number
+        quota_num:
+          type: number
+      required:
+        - water_level
+        - event_type
+        - golden_ikura_num
+        - golden_ikura_pop_num
+        - ikura_num
+        - quota_num
+    UploadResult:
+      type: object
+      properties:
+        boss_counts:
+          $ref: '#/components/schemas/BossCounts'
+        danger_rate:
+          type: number
+        end_time:
+          format: date-time
+          type: string
+        grade:
+          $ref: '#/components/schemas/Grade'
+        grade_point:
+          type: number
+        grade_point_delta:
+          type: number
+        job_id:
+          type: number
+        job_rate:
+          type: number
+        job_result:
+          $ref: '#/components/schemas/JobResult'
+        job_score:
+          type: number
+        kuma_point:
+          type: number
+        my_result:
+          $ref: '#/components/schemas/PlayerResult'
+        other_results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlayerResult'
+        play_time:
+          format: date-time
+          type: string
+        player_type:
+          $ref: '#/components/schemas/PlayerType'
+        schedule:
+          $ref: '#/components/schemas/Schedule'
+        start_time:
+          format: date-time
+          type: string
+        wave_details:
+          type: array
+          items:
+            $ref: '#/components/schemas/WaveResult'
+      required:
+        - boss_counts
+        - danger_rate
+        - end_time
+        - grade
+        - grade_point
+        - grade_point_delta
+        - job_id
+        - job_rate
+        - job_result
+        - job_score
+        - kuma_point
+        - my_result
+        - other_results
+        - play_time
+        - player_type
+        - schedule
+        - start_time
+        - wave_details
+    UploadResults:
       type: object
       properties:
         results:
           minItems: 1
           maxItems: 50
-          type: array
-          items:
-            $ref: '#/components/schemas/Result'
-      required:
-        - results
-    UploadResult:
-      type: object
-      properties:
-        salmon_id:
-          type: number
-          description: リザルトID
-        status:
-          type: string
-          enum:
-            - created
-            - updated
-      required:
-        - salmon_id
-        - status
-    UploadResults:
-      type: object
-      properties:
-        results:
           type: array
           items:
             $ref: '#/components/schemas/UploadResult'
