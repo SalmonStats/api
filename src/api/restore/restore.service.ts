@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, PrismaPromise, Result } from '@prisma/client';
 import dayjs from 'dayjs';
 import { PrismaService } from 'src/prisma.service';
 import {
@@ -10,69 +10,65 @@ import {
   RestoreWave,
 } from '../dto/restore.request.dto';
 import { PlayerResult, UploadResult } from '../dto/result.request.dto';
-import { JobResult } from '../dto/result.response.dto';
+import { FailureReason, JobResult } from '../dto/result.response.dto';
 import { Status, UploadStatus } from '../results/results.status';
 
 @Injectable()
 export class RestoreService {
   constructor(private readonly prisma: PrismaService) {}
 
-  restore(request: RestoreResults): Promise<UploadStatus[]> {
-    const results = Promise.all(
-      request.results.map(async (result) => {
-        const salmonId: number = await this.getSalmonId(result);
-        if (process.env.NODE_ENV === 'production') {
-          return new UploadStatus(null, Status.NotAllowed);
-        }
-        return salmonId === null
-          ? await this.create(result)
-          : new UploadStatus(null, Status.Updated);
-      })
+  async restore(results: RestoreResult[]): Promise<UploadStatus[]> {
+    const response = await this.prisma.$transaction(
+      results.map((result) => this.create(result))
     );
-    return results;
+
+    return response.map(
+      (result) => new UploadStatus(result.salmonId, Status.Created)
+    );
   }
 
   // リザルトIDを取得する
   private async getSalmonId(result: RestoreResult): Promise<number> {
     return (
-      await this.prisma.result.findFirst({
-        where: {
-          playTime: {
-            lte: dayjs(result.play_time).add(10, 'second').toDate(),
-            gte: dayjs(result.play_time).subtract(10, 'second').toDate(),
-          },
-          members: {
-            equals: result.members,
-          },
-        },
-      })
-    )?.salmonId;
-  }
-
-  private async create(result: RestoreResult): Promise<UploadStatus> {
-    const salmonId: number = (
-      await this.prisma.result.create({
-        data: {
-          bossCounts: result.boss_counts,
-          bossKillCounts: result.boss_kill_counts,
-          goldenIkuraNum: result.golden_ikura_num,
-          noNightWaves: result.no_night_waves,
-          ikuraNum: result.ikura_num,
-          dangerRate: result.danger_rate,
-          playTime: result.play_time,
-          members: result.members,
-          players: this.players(result.players),
-          waves: this.waves(result.waves),
-          jobResult: this.jobResult(result.job_result),
-          schedule: {
-            connect: {
-              startTime: result.start_time,
+      (
+        await this.prisma.result.findFirst({
+          where: {
+            playTime: {
+              lte: dayjs(result.play_time).add(10, 'second').toDate(),
+              gte: dayjs(result.play_time).subtract(10, 'second').toDate(),
+            },
+            members: {
+              equals: result.members,
             },
           },
+        })
+      )?.salmonId ?? null
+    );
+  }
+
+  private create(result: RestoreResult): PrismaPromise<Result> {
+    const failureReason: string = result.job_result.failure_reason;
+    const failureWave: number = result.job_result.failure_wave;
+    return this.prisma.result.create({
+      data: {
+        bossCounts: result.boss_counts,
+        bossKillCounts: result.boss_kill_counts,
+        goldenIkuraNum: result.golden_ikura_num,
+        noNightWaves: result.no_night_waves,
+        ikuraNum: result.ikura_num,
+        dangerRate: result.danger_rate,
+        playTime: result.play_time,
+        members: result.members,
+        players: this.players(result.players),
+        waves: this.waves(result.waves, failureReason, failureWave),
+        jobResult: this.jobResult(result.job_result),
+        schedule: {
+          connect: {
+            startTime: result.start_time,
+          },
         },
-      })
-    )?.salmonId;
-    return new UploadStatus(salmonId, Status.Created);
+      },
+    });
   }
 
   private createPlayer(
@@ -110,6 +106,7 @@ export class RestoreService {
       },
     };
   }
+
   private createWave(
     wave: RestoreWave,
     index: number,
@@ -129,13 +126,17 @@ export class RestoreService {
     };
   }
   private waves(
-    waves: RestoreWave[]
+    waves: RestoreWave[],
+    failureReason: string,
+    failureWave: number
   ): Prisma.WaveCreateNestedManyWithoutResultInput {
     return {
       createMany: {
-        // 仮調整
         data: waves.map((wave, index) => {
-          return this.createWave(wave, index, null, true);
+          const reason: string =
+            index + 1 == failureWave ? failureReason : null;
+          const isClear: boolean = !(failureWave == index + 1);
+          return this.createWave(wave, index, reason, isClear);
         }),
       },
     };
