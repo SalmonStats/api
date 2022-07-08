@@ -81,52 +81,28 @@ export class ResultsService {
   }
 
   async upsert(request: UploadResultsModel): Promise<UploadStatus[]> {
-    // 登録できるリザルトをソートして返す
-    const created: boolean[] = await Promise.all(
-      request.results.map(async (result) => await this.creatable(result))
+    const response: UploadStatus[] = await Promise.all(
+      request.results.map(async (result) => {
+        const salmonId = await this.getSalmonId(result);
+        if (salmonId == null) {
+          const salmonId = (
+            await this.prisma.result.create({
+              data: this.create(result),
+            })
+          ).salmonId;
+          return new UploadStatus(salmonId, Status.Created);
+        } else {
+          await this.prisma.result.update({
+            where: {
+              salmonId: salmonId,
+            },
+            data: this.update(result, salmonId),
+          });
+          return new UploadStatus(salmonId, Status.Updated);
+        }
+      })
     );
-    console.log('Created', created);
-
-    // 登録できるリザルトをソートして返す
-    const createdResults: UploadResult[] = await Promise.all(
-      request.results.filter(
-        async (result) => (await this.creatable(result)) !== null
-      )
-    );
-
-    console.log(createdResults);
-    // .sort((a, b) => dayjs(a.play_time).unix() - dayjs(b.play_time).unix());
-
-    // 更新できるリザルトを返す
-    // const updatable: UploadResult[] = request.results.filter(
-    //   async (result) => !(await this.creatable(result))
-    // );
-
-    // const updated = await Promise.all(
-    //   updatable.map(async (result) => {
-    //     const salmonId = await this.getSalmonId(result);
-    //     this.update(result, salmonId);
-    //     return new UploadStatus(salmonId, Status.Updated);
-    //   })
-    // );
-
-    // // 書き込みできるリザルトを書き込む
-    // const created: UploadStatus[] = (
-    //   await this.prisma.$transaction(
-    //     creatable.map((result) =>
-    //       this.prisma.result.create({ data: this.create(result) })
-    //     )
-    //   )
-    // ).map((result) => new UploadStatus(result.salmonId, Status.Created));
-
-    // return (
-    //   updated
-    //     // .concat(created)
-    //     .flat()
-    //     .sort((a, b) => b.salmon_id - a.salmon_id)
-    // );
-
-    return;
+    return response;
   }
 
   // 登録
@@ -235,7 +211,7 @@ export class ResultsService {
   private update(
     result: UploadResult,
     salmonId: number
-  ): Prisma.ResultUncheckedUpdateInput {
+  ): Prisma.ResultUpdateInput {
     return {
       players: {
         update: {
