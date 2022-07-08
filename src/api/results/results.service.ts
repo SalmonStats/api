@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { plainToClass } from 'class-transformer';
 import dayjs from 'dayjs';
+import { response } from 'express';
 import { request } from 'http';
 import { re, transpose } from 'mathjs';
+import { devNull } from 'os';
 import snakecaseKeys from 'snakecase-keys';
 import { PrismaService } from 'src/prisma.service';
 import {
@@ -18,6 +21,16 @@ import {
 } from '../dto/result.request.dto';
 import { Result } from '../dto/result.response.dto';
 import { Status, UploadStatus } from './results.status';
+
+class Updatable {
+  constructor(result: UploadResult, salmonId: number) {
+    this.result = result;
+    this.salmonId = salmonId;
+  }
+
+  result: UploadResult;
+  salmonId: number;
+}
 
 @Injectable()
 export class ResultsService {
@@ -55,22 +68,69 @@ export class ResultsService {
     return response;
   }
 
-  upsert(request: UploadResultsModel): Promise<UploadStatus[]> {
-    const results = Promise.all(
-      request.results.map(async (result) => {
-        const salmonId = await this.getSalmonId(result);
-        if (salmonId === null) {
-          return await this.create(result);
-        } else {
-          return await this.update(result, salmonId);
-        }
-      })
-    );
-    return results;
+  // 書き込みできるリザルトを返す
+  private async creatable(result: UploadResult): Promise<boolean> {
+    const salmonId = await this.getSalmonId(result);
+    return salmonId === null;
   }
 
-  // リザルト作成
-  private async create(result: UploadResult): Promise<UploadStatus> {
+  // 書き込みできるリザルトを返す
+  private async updatable(result: UploadResult): Promise<number> {
+    const salmonId = await this.getSalmonId(result);
+    return salmonId;
+  }
+
+  async upsert(request: UploadResultsModel): Promise<UploadStatus[]> {
+    // 登録できるリザルトをソートして返す
+    const created: boolean[] = await Promise.all(
+      request.results.map(async (result) => await this.creatable(result))
+    );
+    console.log('Created', created);
+
+    // 登録できるリザルトをソートして返す
+    const createdResults: UploadResult[] = await Promise.all(
+      request.results.filter(
+        async (result) => (await this.creatable(result)) !== null
+      )
+    );
+
+    console.log(createdResults);
+    // .sort((a, b) => dayjs(a.play_time).unix() - dayjs(b.play_time).unix());
+
+    // 更新できるリザルトを返す
+    // const updatable: UploadResult[] = request.results.filter(
+    //   async (result) => !(await this.creatable(result))
+    // );
+
+    // const updated = await Promise.all(
+    //   updatable.map(async (result) => {
+    //     const salmonId = await this.getSalmonId(result);
+    //     this.update(result, salmonId);
+    //     return new UploadStatus(salmonId, Status.Updated);
+    //   })
+    // );
+
+    // // 書き込みできるリザルトを書き込む
+    // const created: UploadStatus[] = (
+    //   await this.prisma.$transaction(
+    //     creatable.map((result) =>
+    //       this.prisma.result.create({ data: this.create(result) })
+    //     )
+    //   )
+    // ).map((result) => new UploadStatus(result.salmonId, Status.Created));
+
+    // return (
+    //   updated
+    //     // .concat(created)
+    //     .flat()
+    //     .sort((a, b) => b.salmon_id - a.salmon_id)
+    // );
+
+    return;
+  }
+
+  // 登録
+  private create(result: UploadResult): Prisma.ResultCreateInput {
     const playerId: string = result.my_result.pid;
     const boss_counts: number[] = Object.values(result.boss_counts).map(
       (value) => value.count
@@ -96,132 +156,119 @@ export class ResultsService {
       (wave) => Object.values(EventType).indexOf(wave.event_type.key) == 0
     );
 
-    const salmonId: number = (
-      await this.prisma.result.create({
-        data: {
-          bossCounts: boss_counts,
-          bossKillCounts: boss_kill_counts,
-          members: members,
-          goldenIkuraNum: goldenIkuraNum,
-          ikuraNum: ikuraNum,
-          noNightWaves: nightLess,
-          dangerRate: result.danger_rate,
-          playTime: result.play_time,
-          jobResult: {
-            create: {
-              failureReason: result.job_result.failure_reason,
-              failureWave: result.job_result.failure_wave,
-              isClear: result.job_result.is_clear,
-            },
-          },
-          players: {
-            createMany: {
-              data: players.map((player) => {
-                return {
-                  name: player.name,
-                  nsaid: player.pid,
-                  bossKillCounts: Object.values(player.boss_kill_counts).map(
-                    (value) => value.count
-                  ),
-                  deadCount: player.dead_count,
-                  helpCount: player.help_count,
-                  goldenIkuraNum: player.golden_ikura_num,
-                  ikuraNum: player.ikura_num,
-                  style: player.player_type.style,
-                  species: player.player_type.species,
-                  specialId: player.special.id,
-                  weaponList: player.weapon_list.map((weapon) => weapon.id),
-                  specialCounts: player.special_counts,
-                  jobId: playerId == player.pid ? result.job_id : null,
-                  jobScore: playerId == player.pid ? result.job_score : null,
-                  kumaPoint: playerId == player.pid ? result.kuma_point : null,
-                  gradId: playerId == player.pid ? result.grade.id : null,
-                  gradePoint:
-                    playerId == player.pid ? result.grade_point : null,
-                  gradePointDelta:
-                    playerId == player.pid ? result.grade_point_delta : null,
-                };
-              }),
-            },
-          },
-          waves: {
-            createMany: {
-              data: result.wave_details.map((wave, index) => {
-                return {
-                  waveId: index,
-                  waterLevel: Object.values(WaterLevel).indexOf(
-                    wave.water_level.key
-                  ),
-                  eventType: Object.values(EventType).indexOf(
-                    wave.event_type.key
-                  ),
-                  goldenIkuraNum: wave.golden_ikura_num,
-                  goldenIkuraPopNum: wave.golden_ikura_pop_num,
-                  ikuraNum: wave.ikura_num,
-                  quotaNum: wave.quota_num,
-                  failureReason:
-                    index + 1 == failureWave ? failureReason : null,
-                  isClear: !(failureWave == index + 1),
-                };
-              }),
-            },
-          },
-          schedule: {
-            connect: {
-              startTime_endTime: {
-                startTime: result.start_time,
-                endTime: result.end_time,
-              },
-            },
+    return {
+      bossCounts: boss_counts,
+      bossKillCounts: boss_kill_counts,
+      members: members,
+      goldenIkuraNum: goldenIkuraNum,
+      ikuraNum: ikuraNum,
+      noNightWaves: nightLess,
+      dangerRate: result.danger_rate,
+      playTime: result.play_time,
+      jobResult: {
+        create: {
+          failureReason: result.job_result.failure_reason,
+          failureWave: result.job_result.failure_wave,
+          isClear: result.job_result.is_clear,
+        },
+      },
+      players: {
+        createMany: {
+          data: players.map((player) => {
+            return {
+              name: player.name,
+              nsaid: player.pid,
+              bossKillCounts: Object.values(player.boss_kill_counts).map(
+                (value) => value.count
+              ),
+              deadCount: player.dead_count,
+              helpCount: player.help_count,
+              goldenIkuraNum: player.golden_ikura_num,
+              ikuraNum: player.ikura_num,
+              style: player.player_type.style,
+              species: player.player_type.species,
+              specialId: player.special.id,
+              weaponList: player.weapon_list.map((weapon) => weapon.id),
+              specialCounts: player.special_counts,
+              jobId: playerId == player.pid ? result.job_id : null,
+              jobScore: playerId == player.pid ? result.job_score : null,
+              kumaPoint: playerId == player.pid ? result.kuma_point : null,
+              gradeId: playerId == player.pid ? result.grade.id : null,
+              gradePoint: playerId == player.pid ? result.grade_point : null,
+              gradePointDelta:
+                playerId == player.pid ? result.grade_point_delta : null,
+            };
+          }),
+        },
+      },
+      waves: {
+        createMany: {
+          data: result.wave_details.map((wave, index) => {
+            return {
+              waveId: index,
+              waterLevel: Object.values(WaterLevel).indexOf(
+                wave.water_level.key
+              ),
+              eventType: Object.values(EventType).indexOf(wave.event_type.key),
+              goldenIkuraNum: wave.golden_ikura_num,
+              goldenIkuraPopNum: wave.golden_ikura_pop_num,
+              ikuraNum: wave.ikura_num,
+              quotaNum: wave.quota_num,
+              failureReason: index + 1 == failureWave ? failureReason : null,
+              isClear: !(failureWave == index + 1),
+            };
+          }),
+        },
+      },
+      schedule: {
+        connect: {
+          startTime_endTime: {
+            startTime: result.start_time,
+            endTime: result.end_time,
           },
         },
-      })
-    ).salmonId;
-    return new UploadStatus(salmonId, Status.Created);
+      },
+    };
   }
 
-  private async update(
+  // 更新
+  private update(
     result: UploadResult,
     salmonId: number
-  ): Promise<UploadStatus> {
-    const updatedId: number = (
-      await this.prisma.result.update({
-        where: {
-          salmonId: salmonId,
-        },
-        data: {
-          players: {
-            update: {
-              where: {
-                resultId_nsaid: {
-                  resultId: salmonId,
-                  nsaid: result.my_result.pid,
-                },
-              },
-              data: {
-                jobId: result.job_id,
-                jobScore: result.job_score,
-                kumaPoint: result.kuma_point,
-                jobRate: result.job_rate,
-                gradeId: result.grade.id,
-                gradePoint: result.grade_point,
-                gradePointDelta: result.grade_point_delta,
-              },
+  ): Prisma.ResultUncheckedUpdateInput {
+    return {
+      players: {
+        update: {
+          where: {
+            resultId_nsaid: {
+              resultId: salmonId,
+              nsaid: result.my_result.pid,
             },
           },
+          data: {
+            jobId: result.job_id,
+            jobScore: result.job_score,
+            kumaPoint: result.kuma_point,
+            jobRate: result.job_rate,
+            gradeId: result.grade.id,
+            gradePoint: result.grade_point,
+            gradePointDelta: result.grade_point_delta,
+          },
         },
-      })
-    )?.salmonId;
-    return new UploadStatus(updatedId, Status.Updated);
+      },
+    };
+  }
+
+  private members(result: UploadResult): string[] {
+    return result.other_results
+      .concat([result.my_result])
+      .map((player) => player.pid)
+      .sort();
   }
 
   // 同一リザルトがあるかチェックする
   // あればリザルトID、なければnullを返す
   private async getSalmonId(result: UploadResult): Promise<number> {
-    const members: string[] = result.other_results
-      .concat([result.my_result])
-      .map((player) => player.pid)
-      .sort();
     return (
       (
         await this.prisma.result.findFirst({
@@ -231,7 +278,7 @@ export class ResultsService {
               gte: dayjs(result.play_time).subtract(10, 'second').toDate(),
             },
             members: {
-              equals: members,
+              equals: this.members(result),
             },
           },
         })
