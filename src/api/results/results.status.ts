@@ -18,3 +18,9 @@ export class UploadStatus {
   @ApiProperty({ enum: Status })
   status: Status;
 }
+
+export class UploadStatuses {
+  @ApiProperty({ type: [UploadStatus] })
+  @Type(() => UploadStatus)
+  results: UploadStatus[];
+}

@@ -25,7 +25,7 @@ import {
 } from '../dto/pagination.dto';
 import { UploadResults as UploadedResultsModel } from '../dto/result.request.dto';
 import { ResultsService } from './results.service';
-import { UploadStatus } from './results.status';
+import { UploadStatus, UploadStatuses } from './results.status';
 import { Result } from '../dto/result.response.dto';
 
 @Controller('results')
@@ -60,7 +60,7 @@ export class ResultsController {
   create(
     @Body(new ValidationPipe({ transform: true }))
     request: UploadedResultsModel
-  ): Promise<UploadStatus[]> {
+  ): Promise<UploadStatuses> {
     return this.service.upsert(request);
   }
 }

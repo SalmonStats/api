@@ -16,11 +16,12 @@ import {
   EventType,
   PlayerResult,
   UploadResult,
+  UploadResults,
   UploadResults as UploadResultsModel,
   WaterLevel,
 } from '../dto/result.request.dto';
 import { Result } from '../dto/result.response.dto';
-import { Status, UploadStatus } from './results.status';
+import { Status, UploadStatus, UploadStatuses } from './results.status';
 
 class Updatable {
   constructor(result: UploadResult, salmonId: number) {
@@ -80,8 +81,8 @@ export class ResultsService {
     return salmonId;
   }
 
-  async upsert(request: UploadResultsModel): Promise<UploadStatus[]> {
-    const response: UploadStatus[] = await Promise.all(
+  async upsert(request: UploadResultsModel): Promise<UploadStatuses> {
+    const results: UploadStatus[] = await Promise.all(
       request.results.map(async (result) => {
         const salmonId = await this.getSalmonId(result);
         if (salmonId == null) {
@@ -102,6 +103,8 @@ export class ResultsService {
         }
       })
     );
+    const response = new UploadStatuses();
+    response.results = results;
     return response;
   }
 
