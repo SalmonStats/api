@@ -1,7 +1,14 @@
 import { Injectable } from '@nestjs/common';
+import { plainToClass } from 'class-transformer';
 import dayjs from 'dayjs';
-import { transpose } from 'mathjs';
+import { request } from 'http';
+import { re, transpose } from 'mathjs';
+import snakecaseKeys from 'snakecase-keys';
 import { PrismaService } from 'src/prisma.service';
+import {
+  PaginatedDto,
+  PaginatedRequestDtoForResult,
+} from '../dto/pagination.dto';
 import {
   EventType,
   PlayerResult,
@@ -9,6 +16,7 @@ import {
   UploadResults as UploadResultsModel,
   WaterLevel,
 } from '../dto/result.request.dto';
+import { Result } from '../dto/result.response.dto';
 import { Status, UploadStatus } from './results.status';
 
 @Injectable()
@@ -17,7 +25,35 @@ export class ResultsService {
 
   find() {}
 
-  findMany() {}
+  // リザルト一括取得
+  async findMany(
+    request: PaginatedRequestDtoForResult
+  ): Promise<PaginatedDto<Result>> {
+    const response = new PaginatedDto<Result>();
+
+    const results = await this.prisma.result.findMany({
+      take: request.limit,
+      skip: request.offset,
+      include: {
+        players: true,
+        waves: true,
+        jobResult: true,
+        schedule: true,
+      },
+      orderBy: {
+        salmonId: 'desc',
+      },
+    });
+    response.limit = request.limit;
+    response.offset = request.offset;
+    response.results = results.map((result) =>
+      plainToClass(Result, snakecaseKeys(result), {
+        excludeExtraneousValues: true,
+        exposeUnsetFields: false,
+      })
+    );
+    return response;
+  }
 
   upsert(request: UploadResultsModel): Promise<UploadStatus[]> {
     const results = Promise.all(
@@ -33,6 +69,7 @@ export class ResultsService {
     return results;
   }
 
+  // リザルト作成
   private async create(result: UploadResult): Promise<UploadStatus> {
     const playerId: string = result.my_result.pid;
     const boss_counts: number[] = Object.values(result.boss_counts).map(

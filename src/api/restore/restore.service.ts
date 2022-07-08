@@ -27,6 +27,20 @@ export class RestoreService {
     );
   }
 
+  upsert(results: RestoreResult[]): Promise<UploadStatus[]> {
+    const response = Promise.all(
+      results.map(async (result) => {
+        const salmonId: number = await this.getSalmonId(result);
+        if (salmonId === null) {
+          const resultId: number = (await this.create(result)).salmonId;
+          return new UploadStatus(resultId, Status.Created);
+        }
+        return new UploadStatus(salmonId, Status.Updated);
+      })
+    );
+    return response;
+  }
+
   // リザルトIDを取得する
   private async getSalmonId(result: RestoreResult): Promise<number> {
     return (

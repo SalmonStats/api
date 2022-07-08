@@ -1,4 +1,3 @@
-import { Prisma, Result as ResultModel } from '.prisma/client';
 import {
   Body,
   ClassSerializerInterceptor,
@@ -14,23 +13,20 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import {
-  ApiBadRequestResponse,
   ApiExtraModels,
   ApiNotFoundResponse,
-  ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
 import {
-  ApiPaginatedResponse,
   PaginatedDto,
   PaginatedRequestDtoForResult,
 } from '../dto/pagination.dto';
 import { UploadResults as UploadedResultsModel } from '../dto/result.request.dto';
-import { RestoreResults as RestoreResultsModel } from '../dto/restore.request.dto';
 import { ResultsService } from './results.service';
 import { UploadStatus } from './results.status';
+import { Result } from '../dto/result.response.dto';
 
 @Controller('results')
 @ApiExtraModels(PaginatedDto)
@@ -44,6 +40,17 @@ export class ResultsController {
   @ApiNotFoundResponse()
   find() {
     return this.service.find();
+  }
+
+  @Get('')
+  @ApiTags('リザルト')
+  @ApiOperation({ operationId: '一括取得' })
+  @ApiNotFoundResponse()
+  findMany(
+    @Query(new ValidationPipe({ transform: true }))
+    request: PaginatedRequestDtoForResult
+  ): Promise<PaginatedDto<Result>> {
+    return this.service.findMany(request);
   }
 
   @Post('')

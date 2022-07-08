@@ -18,9 +18,6 @@ export class RestoreController {
     @Body(new ValidationPipe({ transform: true }))
     request: RestoreResults
   ): Promise<UploadStatus[]> {
-    const results: RestoreResult[] = request.results.sort(
-      (a, b) => dayjs(a.play_time).unix() - dayjs(b.play_time).unix()
-    );
-    return this.service.restore(results);
+    return this.service.restore(request.results);
   }
 }

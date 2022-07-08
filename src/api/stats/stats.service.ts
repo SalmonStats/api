@@ -335,7 +335,6 @@ export class StatsService {
           .concat(data[3].map((member) => member.nsaid))
       ),
     ];
-    console.log(members.length);
     // 画像情報を取得
     // 最高取得件数が200件なので一括で取得できるはず（多分100x4まで対応)
     const request = new NicknameAndIconRequestDto(members);
@@ -361,8 +360,6 @@ export class StatsService {
       member['thumbnail_url'] = thumbnailURL;
       return member;
     });
-
-    console.log(gradeResultMembers);
 
     // WAVEの情報を取得
     const getWaveResult = (

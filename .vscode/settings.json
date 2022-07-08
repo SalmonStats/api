@@ -12,6 +12,7 @@
     "nsaid",
     "pinia",
     "pnpm",
+    "snakecase",
     "tkgling",
     "unocss",
     "unplugin",
@@ -36,5 +37,5 @@
     "editor.defaultFormatter": "Prisma.prisma"
   },
   "editor.formatOnSave": true,
-  "editor.formatOnPaste": true,
+  "editor.formatOnPaste": true
 }

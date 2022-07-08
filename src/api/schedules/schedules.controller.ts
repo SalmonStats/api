@@ -1,6 +1,17 @@
-import { Controller, Get, Post } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Schedule } from '@prisma/client';
+import {
+  Controller,
+  Get,
+  ParseBoolPipe,
+  Post,
+  Query,
+  ValidationPipe,
+} from '@nestjs/common';
+import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import {
+  PaginatedDto,
+  PaginatedRequestDtoForSchedule,
+} from '../dto/pagination.dto';
+import { Schedule } from '../dto/schedules.response.dto';
 import { SchedulesService } from './schedules.service';
 
 @Controller('schedules')
@@ -13,8 +24,11 @@ export class SchedulesController {
     operationId: '取得',
     description: 'スケジュールを取得します',
   })
-  findMany(): Promise<any[]> {
-    return this.service.findMany();
+  findMany(
+    @Query(new ValidationPipe({ transform: true }))
+    request: PaginatedRequestDtoForSchedule
+  ): Promise<PaginatedDto<Schedule>> {
+    return this.service.findMany(request);
   }
 
   @Get(':start_time')

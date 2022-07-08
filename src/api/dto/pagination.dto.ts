@@ -40,7 +40,7 @@ export class PaginatedRequestDto {
   @ApiProperty({
     title: 'limit',
     minimum: 0,
-    maximum: 1000,
+    maximum: 200,
     default: 25,
   })
   readonly limit: number;
@@ -85,6 +85,24 @@ export class PaginatedRequestDtoForWave extends PaginatedRequestDto {
   start_time: number;
 }
 
+export class PaginatedRequestDtoForSchedule extends PaginatedRequestDto {
+  @ApiProperty({
+    title: '',
+    description: '未リリースのデータを含むかどうか',
+    default: true,
+  })
+  @Expose()
+  @Transform((params) => {
+    if (params.value === undefined) {
+      return undefined;
+    }
+    return params.value === 'true';
+  })
+  @IsOptional()
+  @IsBoolean()
+  readonly include_futures: boolean;
+}
+
 export class PaginatedRequestDtoForResult extends PaginatedRequestDto {
   @ApiProperty({
     title: '',
@@ -101,15 +119,6 @@ export class PaginatedRequestDtoForResult extends PaginatedRequestDto {
   @IsOptional()
   @IsBoolean()
   readonly include_details: boolean;
-
-  @Expose()
-  @Transform((params) => params.value === 'true')
-  @IsBoolean()
-  @ApiProperty({
-    title: 'order',
-    default: true,
-  })
-  readonly order: boolean;
 
   @ApiPropertyOptional({
     title: '',
