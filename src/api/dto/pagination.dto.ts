@@ -182,7 +182,7 @@ export class PaginatedRequestDtoForResult extends PaginatedRequestDto {
   })
   @IsOptional()
   @IsBoolean()
-  readonly nightLess?: boolean;
+  readonly night_less?: boolean;
 
   @ApiPropertyOptional({
     title: '',

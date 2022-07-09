@@ -2,10 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { plainToClass } from 'class-transformer';
 import dayjs from 'dayjs';
-import { response } from 'express';
-import { request } from 'http';
-import { re, transpose } from 'mathjs';
-import { devNull } from 'os';
+import { transpose } from 'mathjs';
 import snakecaseKeys from 'snakecase-keys';
 import { PrismaService } from 'src/prisma.service';
 import {
@@ -60,26 +57,86 @@ export class ResultsService {
     return result;
   }
 
+  private where(
+    request: PaginatedRequestDtoForResult
+  ): Prisma.ResultWhereInput {
+    if (request.nsaid === undefined) {
+      return {
+        ikuraNum: {
+          gte: request.ikura_num,
+        },
+        goldenIkuraNum: {
+          gte: request.golden_ikura_num,
+        },
+        startTime: request.start_time,
+        jobResult: {
+          isClear: request.is_clear,
+        },
+        noNightWaves: request.night_less,
+      };
+    } else {
+      return {
+        ikuraNum: {
+          gte: request.ikura_num,
+        },
+        goldenIkuraNum: {
+          gte: request.golden_ikura_num,
+        },
+        startTime: request.start_time,
+        jobResult: {
+          isClear: request.is_clear,
+        },
+        noNightWaves: request.night_less,
+        members: {
+          has: request.nsaid,
+        },
+      };
+    }
+  }
+
+  private order(
+    request: PaginatedRequestDtoForResult
+  ): Prisma.ResultOrderByWithRelationInput {
+    switch (request.sort) {
+      case SortType.GOLDEN_IKURA_NUM:
+        return {
+          goldenIkuraNum: request.order,
+        };
+      case SortType.IKURA_NUM:
+        return {
+          ikuraNum: request.order,
+        };
+      case SortType.PLAY_TIME:
+        return {
+          playTime: request.order,
+        };
+      case SortType.SALMON_ID:
+        return {
+          salmonId: request.order,
+        };
+    }
+  }
+
   // リザルト一括取得
   async findMany(
     request: PaginatedRequestDtoForResult
   ): Promise<PaginatedDto<Result>> {
     const response = new PaginatedDto<Result>();
-    const includeDetails: boolean = request.include_details;
     const results = await this.prisma.result.findMany({
       take: request.limit,
       skip: request.offset,
+      where: this.where(request),
       include: {
         players: request.include_details,
         waves: request.include_details,
         jobResult: request.include_details,
         schedule: request.include_details,
       },
-      orderBy: {
-        salmonId: 'desc',
-      },
+      orderBy: this.order(request),
     });
-    response.total = await this.prisma.result.count();
+    response.total = await this.prisma.result.count({
+      where: this.where(request),
+    });
     response.limit = request.limit;
     response.offset = request.offset;
     response.results = results.map((result) =>
