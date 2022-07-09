@@ -46,6 +46,7 @@ paths:
           required: true
           in: path
           example: 91d160aa84e88da6
+          description: ユーザーID
           schema:
             type: string
       responses:
@@ -198,6 +199,10 @@ paths:
       responses:
         '200':
           description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerStatusResponseDto'
       tags:
         - システム
   /v1/results/{salmon_id}:
@@ -336,6 +341,10 @@ paths:
       responses:
         '201':
           description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadStatuses'
         '400':
           description: ''
       tags:
@@ -1087,6 +1096,87 @@ components:
             $ref: '#/components/schemas/RestoreResult'
       required:
         - results
+    ServerStatusValue:
+      type: object
+      properties:
+        x:
+          type: number
+        'y':
+          type: number
+      required:
+        - x
+        - 'y'
+    ServerStatusDataBase:
+      type: object
+      properties:
+        system:
+          $ref: '#/components/schemas/ServerStatusValue'
+        user:
+          $ref: '#/components/schemas/ServerStatusValue'
+        wait:
+          $ref: '#/components/schemas/ServerStatusValue'
+        buffers:
+          $ref: '#/components/schemas/ServerStatusValue'
+        cache:
+          $ref: '#/components/schemas/ServerStatusValue'
+        free:
+          $ref: '#/components/schemas/ServerStatusValue'
+        used:
+          $ref: '#/components/schemas/ServerStatusValue'
+    CPUStatusData:
+      type: object
+      properties:
+        cpu0:
+          $ref: '#/components/schemas/ServerStatusDataBase'
+      required:
+        - cpu0
+    MemoryStatusData:
+      type: object
+      properties:
+        real:
+          $ref: '#/components/schemas/ServerStatusDataBase'
+        swap:
+          $ref: '#/components/schemas/ServerStatusDataBase'
+      required:
+        - real
+        - swap
+    ServerStatusData:
+      type: object
+      properties:
+        cpu:
+          title: CPU Status
+          allOf:
+            - $ref: '#/components/schemas/CPUStatusData'
+        load:
+          title: Load Status
+          allOf:
+            - $ref: '#/components/schemas/ServerStatusValue'
+        memory:
+          title: Memory Status
+          allOf:
+            - $ref: '#/components/schemas/MemoryStatusData'
+        sys:
+          title: System Info
+          allOf:
+            - $ref: '#/components/schemas/ServerStatusValue'
+        uptime:
+          type: number
+      required:
+        - cpu
+        - load
+        - memory
+        - sys
+        - uptime
+    ServerStatusResponseDto:
+      type: object
+      properties:
+        version:
+          type: number
+        data:
+          $ref: '#/components/schemas/ServerStatusData'
+      required:
+        - version
+        - data
     PaginatedDto:
       type: object
       properties:
@@ -1350,6 +1440,30 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/UploadResult'
+      required:
+        - results
+    UploadStatus:
+      type: object
+      properties:
+        salmon_id:
+          type: number
+          description: リザルトID
+        status:
+          type: string
+          enum:
+            - created
+            - updated
+            - not allowed
+      required:
+        - salmon_id
+        - status
+    UploadStatuses:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/UploadStatus'
       required:
         - results
     RankResult:

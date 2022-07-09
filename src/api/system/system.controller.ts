@@ -1,5 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ServerStatusResponseDto } from '../dto/server.response.dto';
 import { SystemService } from './system.service';
 
 @Controller('system')
@@ -9,6 +10,7 @@ export class SystemController {
   @Get()
   @ApiTags('システム')
   @ApiOperation({ operationId: 'サーバー情報' })
+  @ApiOkResponse({ type: ServerStatusResponseDto })
   find() {
     return this.service.getSystemInfo();
   }

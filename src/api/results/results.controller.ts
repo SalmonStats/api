@@ -63,7 +63,9 @@ export class ResultsController {
   @HttpCode(200)
   @ApiTags('リザルト')
   @ApiOperation({ operationId: '登録' })
-  @ApiCreatedResponse()
+  @ApiCreatedResponse({
+    type: UploadStatuses,
+  })
   @ApiBadRequestResponse()
   create(
     @Body(new ValidationPipe({ transform: true }))

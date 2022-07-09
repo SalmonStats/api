@@ -21,7 +21,12 @@ export class UsersController {
   @ApiTags('ユーザー')
   @ApiOperation({ operationId: '一覧検索' })
   @ApiOkResponse()
-  @ApiQuery({ name: 'nickname', type: String, example: 'みなかみはちみ' })
+  @ApiQuery({
+    name: 'nickname',
+    type: String,
+    example: 'みなかみはちみ',
+    description: 'ニックネーム',
+  })
   findMany(
     @Query(new ValidationPipe({ transform: true }))
     query: PaginatedRequestDtoForUser
@@ -34,7 +39,11 @@ export class UsersController {
   @ApiOperation({ operationId: '検索' })
   @ApiOkResponse({ type: UserStats })
   @ApiNotFoundResponse()
-  @ApiParam({ name: 'nsaid', example: '91d160aa84e88da6' })
+  @ApiParam({
+    name: 'nsaid',
+    example: '91d160aa84e88da6',
+    description: 'ユーザーID',
+  })
   find(@Param('nsaid') nsaid: string): Promise<UserStats> {
     return this.service.find(nsaid);
   }
