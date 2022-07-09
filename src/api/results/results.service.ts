@@ -65,15 +65,15 @@ export class ResultsService {
     request: PaginatedRequestDtoForResult
   ): Promise<PaginatedDto<Result>> {
     const response = new PaginatedDto<Result>();
-
+    const includeDetails: boolean = request.include_details;
     const results = await this.prisma.result.findMany({
       take: request.limit,
       skip: request.offset,
       include: {
-        players: true,
-        waves: true,
-        jobResult: true,
-        schedule: true,
+        players: request.include_details,
+        waves: request.include_details,
+        jobResult: request.include_details,
+        schedule: request.include_details,
       },
       orderBy: {
         salmonId: 'desc',
