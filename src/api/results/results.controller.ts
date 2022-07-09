@@ -38,8 +38,8 @@ export class ResultsController {
   @ApiTags('リザルト')
   @ApiOperation({ operationId: '取得' })
   @ApiNotFoundResponse()
-  find() {
-    return this.service.find();
+  find(@Param('salmon_id', ParseIntPipe) salmon_id: number): Promise<Result> {
+    return this.service.find(salmon_id);
   }
 
   @Get('')

@@ -23,16 +23,6 @@ import {
 import { Result } from '../dto/result.response.dto';
 import { Status, UploadStatus, UploadStatuses } from './results.status';
 
-class Updatable {
-  constructor(result: UploadResult, salmonId: number) {
-    this.result = result;
-    this.salmonId = salmonId;
-  }
-
-  result: UploadResult;
-  salmonId: number;
-}
-
 export enum OrderType {
   ASC = 'asc',
   DESC = 'desc',
@@ -49,7 +39,26 @@ export enum SortType {
 export class ResultsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  find() {}
+  async find(salmonId: number): Promise<Result> {
+    const result: Result = plainToClass(
+      Result,
+      snakecaseKeys(
+        await this.prisma.result.findUnique({
+          where: {
+            salmonId: salmonId,
+          },
+          include: {
+            players: true,
+            waves: true,
+            jobResult: true,
+            schedule: true,
+          },
+        })
+      )
+    );
+
+    return result;
+  }
 
   // リザルト一括取得
   async findMany(
@@ -70,6 +79,7 @@ export class ResultsService {
         salmonId: 'desc',
       },
     });
+    response.total = await this.prisma.result.count();
     response.limit = request.limit;
     response.offset = request.offset;
     response.results = results.map((result) =>

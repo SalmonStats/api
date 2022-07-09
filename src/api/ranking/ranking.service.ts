@@ -66,7 +66,13 @@ export class RankingService {
   ) {}
 
   async shiftRank(start_time?: number) {
+    // 開催時間が現在時間よりも前の最も若いリザルトを取得
     const schedule = await this.prisma.schedule.findFirst({
+      where: {
+        startTime: {
+          lte: dayjs().toDate(),
+        },
+      },
       orderBy: {
         startTime: 'desc',
       },
