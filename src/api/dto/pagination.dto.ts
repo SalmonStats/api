@@ -34,6 +34,7 @@ export class PaginatedRequestDto {
     title: 'offset',
     minimum: 0,
     default: 0,
+    description: 'オフセット',
   })
   readonly offset: number;
 
@@ -45,12 +46,16 @@ export class PaginatedRequestDto {
     minimum: 0,
     maximum: 200,
     default: 25,
+    description: '上限値',
   })
   readonly limit: number;
 }
 
 export class PaginatedRequestDtoForUser extends PaginatedRequestDto {
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({
+    title: 'nickname',
+    description: 'ニックネーム',
+  })
   @IsString()
   nickname: string;
 }
@@ -58,9 +63,9 @@ export class PaginatedRequestDtoForUser extends PaginatedRequestDto {
 export class PaginatedRequestDtoForWave extends PaginatedRequestDto {
   @ApiProperty({
     title: '',
-    description: 'イベントID',
     default: 0,
     example: 0,
+    description: 'イベントID',
   })
   @IsInt()
   @Max(6)
@@ -69,9 +74,9 @@ export class PaginatedRequestDtoForWave extends PaginatedRequestDto {
 
   @ApiProperty({
     title: '',
-    description: '潮位ID',
     default: 0,
     example: 0,
+    description: '潮位ID',
   })
   @IsInt()
   @Max(2)
@@ -80,9 +85,9 @@ export class PaginatedRequestDtoForWave extends PaginatedRequestDto {
 
   @ApiProperty({
     title: '',
-    description: 'スケジュールID',
     default: 0,
     example: 1655899200,
+    description: 'スケジュールID',
   })
   @IsInt()
   start_time: number;
@@ -90,9 +95,9 @@ export class PaginatedRequestDtoForWave extends PaginatedRequestDto {
 
 export class PaginatedRequestDtoForSchedule extends PaginatedRequestDto {
   @ApiProperty({
-    title: '',
+    title: 'include_futures',
+    default: false,
     description: '未リリースのデータを含むかどうか',
-    default: true,
   })
   @Expose()
   @Transform((params) => {
@@ -109,8 +114,8 @@ export class PaginatedRequestDtoForSchedule extends PaginatedRequestDto {
 export class PaginatedRequestDtoForResult extends PaginatedRequestDto {
   @ApiPropertyOptional({
     title: '',
-    description: '詳細データを含むかどうか',
     default: false,
+    description: '詳細データを含むかどうか',
   })
   @Expose()
   @Transform((params) => {
@@ -218,9 +223,9 @@ export class PaginatedRequestDtoForResult extends PaginatedRequestDto {
 
   @ApiPropertyOptional({
     title: '',
-    description: 'ソート種類',
     enum: SortType,
     default: SortType.SALMON_ID,
+    description: 'ソート種類',
   })
   @Expose()
   @Transform((params) => {
@@ -235,9 +240,9 @@ export class PaginatedRequestDtoForResult extends PaginatedRequestDto {
 
   @ApiPropertyOptional({
     title: '',
-    description: 'ソート方向',
     enum: OrderType,
     default: OrderType.ASC,
+    description: 'ソート方向',
   })
   @Expose()
   @Transform((params) => {
@@ -255,7 +260,7 @@ export class PaginatedDto<T> {
   @ApiProperty({ type: 'integer', description: '総数' })
   total: number;
 
-  @ApiProperty({ type: 'integer', description: '取得数' })
+  @ApiProperty({ type: 'integer', description: '上限数' })
   limit: number;
 
   @ApiProperty({ type: 'integer', description: 'オフセット' })

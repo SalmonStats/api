@@ -8,6 +8,7 @@ paths:
         - name: offset
           required: false
           in: query
+          description: オフセット
           schema:
             minimum: 0
             title: offset
@@ -16,6 +17,7 @@ paths:
         - name: limit
           required: false
           in: query
+          description: 上限値
           schema:
             minimum: 0
             maximum: 200
@@ -25,8 +27,10 @@ paths:
         - name: nickname
           required: true
           in: query
+          description: ニックネーム
           example: みなかみはちみ
           schema:
+            title: nickname
             type: string
       responses:
         '200':
@@ -222,6 +226,7 @@ paths:
         - name: offset
           required: false
           in: query
+          description: オフセット
           schema:
             minimum: 0
             title: offset
@@ -230,6 +235,7 @@ paths:
         - name: limit
           required: false
           in: query
+          description: 上限値
           schema:
             minimum: 0
             maximum: 200
@@ -422,6 +428,7 @@ paths:
         - name: offset
           required: false
           in: query
+          description: オフセット
           schema:
             minimum: 0
             title: offset
@@ -430,6 +437,7 @@ paths:
         - name: limit
           required: false
           in: query
+          description: 上限値
           schema:
             minimum: 0
             maximum: 200
@@ -441,8 +449,8 @@ paths:
           in: query
           description: 未リリースのデータを含むかどうか
           schema:
-            title: ''
-            default: true
+            title: include_futures
+            default: false
             type: boolean
       responses:
         '200':
@@ -817,7 +825,7 @@ components:
           description: 総数
         limit:
           type: integer
-          description: 取得数
+          description: 上限数
         offset:
           type: integer
           description: オフセット
