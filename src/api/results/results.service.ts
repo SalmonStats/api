@@ -33,6 +33,18 @@ class Updatable {
   salmonId: number;
 }
 
+export enum OrderType {
+  ASC = 'asc',
+  DESC = 'desc',
+}
+
+export enum SortType {
+  GOLDEN_IKURA_NUM = 'golden_ikura_num',
+  IKURA_NUM = 'ikura_num',
+  SALMON_ID = 'salmon_id',
+  PLAY_TIME = 'play_time',
+}
+
 @Injectable()
 export class ResultsService {
   constructor(private readonly prisma: PrismaService) {}

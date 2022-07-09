@@ -6,7 +6,7 @@ paths:
       summary: ''
       parameters:
         - name: offset
-          required: true
+          required: false
           in: query
           schema:
             minimum: 0
@@ -14,7 +14,7 @@ paths:
             default: 0
             type: number
         - name: limit
-          required: true
+          required: false
           in: query
           schema:
             minimum: 0
@@ -235,7 +235,7 @@ paths:
       summary: ''
       parameters:
         - name: offset
-          required: true
+          required: false
           in: query
           schema:
             minimum: 0
@@ -243,7 +243,7 @@ paths:
             default: 0
             type: number
         - name: limit
-          required: true
+          required: false
           in: query
           schema:
             minimum: 0
@@ -252,12 +252,12 @@ paths:
             default: 25
             type: number
         - name: include_details
-          required: true
+          required: false
           in: query
           description: 詳細データを含むかどうか
           schema:
             title: ''
-            default: true
+            default: false
             type: boolean
         - name: start_time
           required: false
@@ -280,7 +280,7 @@ paths:
           schema:
             title: ''
             type: boolean
-        - name: no_night_waves
+        - name: nightLess
           required: false
           in: query
           description: 夜イベントを含まないかどうか
@@ -301,6 +301,30 @@ paths:
           schema:
             title: ''
             type: number
+        - name: sort
+          required: false
+          in: query
+          description: ソート種類
+          schema:
+            title: ''
+            default: salmon_id
+            enum:
+              - golden_ikura_num
+              - ikura_num
+              - salmon_id
+              - play_time
+            type: string
+        - name: order
+          required: false
+          in: query
+          description: ソート方向
+          schema:
+            title: ''
+            default: asc
+            enum:
+              - asc
+              - desc
+            type: string
       responses:
         '404':
           description: ''
@@ -407,7 +431,7 @@ paths:
       description: スケジュールを取得します
       parameters:
         - name: offset
-          required: true
+          required: false
           in: query
           schema:
             minimum: 0
@@ -415,7 +439,7 @@ paths:
             default: 0
             type: number
         - name: limit
-          required: true
+          required: false
           in: query
           schema:
             minimum: 0

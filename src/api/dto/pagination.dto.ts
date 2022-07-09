@@ -4,7 +4,7 @@
  * @date 2020-10-11
  */
 
-import { applyDecorators, ParseBoolPipe, Type } from '@nestjs/common';
+import { applyDecorators, Type } from '@nestjs/common';
 import {
   ApiOkResponse,
   ApiProperty,
@@ -15,6 +15,7 @@ import { Expose, Transform } from 'class-transformer';
 import {
   IsBoolean,
   IsDate,
+  IsEnum,
   IsInt,
   IsOptional,
   IsString,
@@ -22,12 +23,14 @@ import {
   Min,
 } from 'class-validator';
 import dayjs from 'dayjs';
+import { arrayBuffer } from 'stream/consumers';
+import { OrderType, SortType } from '../results/results.service';
 
 export class PaginatedRequestDto {
   @Expose()
   @Transform((params) => parseInt(params.value || 0, 10))
   @IsInt()
-  @ApiProperty({
+  @ApiPropertyOptional({
     title: 'offset',
     minimum: 0,
     default: 0,
@@ -37,7 +40,7 @@ export class PaginatedRequestDto {
   @Expose()
   @Transform((params) => parseInt(params.value || 25, 10))
   @IsInt()
-  @ApiProperty({
+  @ApiPropertyOptional({
     title: 'limit',
     minimum: 0,
     maximum: 200,
@@ -104,15 +107,15 @@ export class PaginatedRequestDtoForSchedule extends PaginatedRequestDto {
 }
 
 export class PaginatedRequestDtoForResult extends PaginatedRequestDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     title: '',
     description: '詳細データを含むかどうか',
-    default: true,
+    default: false,
   })
   @Expose()
   @Transform((params) => {
     if (params.value === undefined) {
-      return undefined;
+      return false;
     }
     return params.value === 'true';
   })
@@ -179,7 +182,7 @@ export class PaginatedRequestDtoForResult extends PaginatedRequestDto {
   })
   @IsOptional()
   @IsBoolean()
-  readonly no_night_waves?: boolean;
+  readonly nightLess?: boolean;
 
   @ApiPropertyOptional({
     title: '',
@@ -212,6 +215,40 @@ export class PaginatedRequestDtoForResult extends PaginatedRequestDto {
   @IsInt()
   @Min(0)
   readonly ikura_num?: number;
+
+  @ApiPropertyOptional({
+    title: '',
+    description: 'ソート種類',
+    enum: SortType,
+    default: SortType.SALMON_ID,
+  })
+  @Expose()
+  @Transform((params) => {
+    if (params.value === undefined) {
+      return undefined;
+    }
+    return params.value;
+  })
+  @IsOptional()
+  @IsEnum(SortType)
+  readonly sort?: SortType;
+
+  @ApiPropertyOptional({
+    title: '',
+    description: 'ソート方向',
+    enum: OrderType,
+    default: OrderType.ASC,
+  })
+  @Expose()
+  @Transform((params) => {
+    if (params.value === undefined) {
+      return undefined;
+    }
+    return params.value;
+  })
+  @IsOptional()
+  @IsEnum(OrderType)
+  readonly order?: OrderType;
 }
 
 export class PaginatedDto<T> {
