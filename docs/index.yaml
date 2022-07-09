@@ -508,7 +508,7 @@ tags: []
 servers: []
 components:
   schemas:
-    Result:
+    IkuraResult:
       type: object
       properties: {}
     StageResult:
@@ -527,9 +527,9 @@ components:
         nightless:
           type: boolean
         player_results:
-          $ref: '#/components/schemas/Result'
+          $ref: '#/components/schemas/IkuraResult'
         team_results:
-          $ref: '#/components/schemas/Result'
+          $ref: '#/components/schemas/IkuraResult'
       required:
         - stage_id
         - grade_point_max
@@ -538,6 +538,297 @@ components:
         - nightless
         - player_results
         - team_results
+    JobResult:
+      type: object
+      properties:
+        failure_reason:
+          type: string
+          enum:
+            - time_limit
+            - wipe_out
+          nullable: true
+          example: null
+          description: バイト失敗理由
+        failure_wave:
+          type: number
+          nullable: true
+          example: null
+          description: バイト失敗WAVE数
+        is_clear:
+          type: boolean
+          example: true
+          description: クリアしたかどうか
+      required:
+        - failure_reason
+        - failure_wave
+        - is_clear
+    Schedule:
+      type: object
+      properties:
+        start_time:
+          format: date-time
+          type: string
+          description: シフト開始時刻
+        stage_id:
+          type: string
+          enum:
+            - SHAKEUP
+            - SHAKESHIP
+            - SHAKEHOUSE
+            - SHAKELIFT
+            - SHAKELIDE
+          example: 5000
+          description: ステージID
+        end_time:
+          format: date-time
+          type: string
+          description: シフト終了時刻
+        rare_weapon:
+          type: number
+          nullable: true
+          default: null
+          description: 支給レアブキ
+        weapon_list:
+          description: 支給ブキリスト
+          type: array
+          items:
+            type: number
+      required:
+        - start_time
+        - stage_id
+        - end_time
+        - rare_weapon
+        - weapon_list
+    Player:
+      type: object
+      properties:
+        nsaid:
+          type: string
+          example: '0000000000000000'
+          description: プレイヤーID
+        name:
+          type: string
+          example: tkgling
+          description: プレイヤー名
+        job_id:
+          type: number
+          description: バイト回数
+        boss_kill_counts:
+          example:
+            - 0
+            - 0
+            - 0
+            - 0
+            - 0
+            - 0
+            - 0
+            - 0
+            - 0
+          description: オオモノ討伐数
+          type: array
+          items:
+            type: number
+        dead_count:
+          type: number
+          description: 被救助数
+        golden_ikura_num:
+          type: number
+          description: 金イクラ数
+        help_count:
+          type: number
+          description: 救助数
+        ikura_num:
+          type: number
+          description: 赤イクラ数
+        grade_id:
+          type: number
+          description: 評価
+        grade_point:
+          type: number
+          description: 評価レート
+        grade_point_delta:
+          type: number
+          description: 評価レート変動
+        kuma_point:
+          type: number
+          description: クマサンポイント
+        job_score:
+          type: number
+          description: ジョブスコア
+        style:
+          type: string
+          description: 性別
+        species:
+          type: string
+          description: 種族
+        job_rate:
+          type: number
+          description: ジョブレート
+        special_id:
+          type: number
+          description: 支給スペシャル
+        special_counts:
+          description: スペシャル使用回数
+          type: array
+          items:
+            type: number
+        weapon_list:
+          description: 支給ブキ
+          type: array
+          items:
+            type: number
+      required:
+        - nsaid
+        - name
+        - job_id
+        - boss_kill_counts
+        - dead_count
+        - golden_ikura_num
+        - help_count
+        - ikura_num
+        - grade_id
+        - grade_point
+        - grade_point_delta
+        - kuma_point
+        - job_score
+        - style
+        - species
+        - job_rate
+        - special_id
+        - special_counts
+        - weapon_list
+    Wave:
+      type: object
+      properties:
+        event_type:
+          type: number
+          description: イベント
+        water_level:
+          type: number
+          description: 潮位
+        golden_ikura_num:
+          type: number
+          description: 金イクラ数
+        golden_ikura_pop_num:
+          type: number
+          description: 金イクラドロップ数
+        quota_num:
+          type: number
+          description: 金イクラノルマ数
+        ikura_num:
+          type: number
+          description: 赤イクラ数
+      required:
+        - event_type
+        - water_level
+        - golden_ikura_num
+        - golden_ikura_pop_num
+        - quota_num
+        - ikura_num
+    Result:
+      type: object
+      properties:
+        salmon_id:
+          type: number
+          description: リザルトID
+        boss_counts:
+          example:
+            - 0
+            - 0
+            - 0
+            - 0
+            - 0
+            - 0
+            - 0
+            - 0
+            - 0
+          description: オオモノ出現数
+          type: array
+          items:
+            type: number
+        boss_kill_counts:
+          example:
+            - 0
+            - 0
+            - 0
+            - 0
+            - 0
+            - 0
+            - 0
+            - 0
+            - 0
+          description: オオモノ討伐数
+          type: array
+          items:
+            type: number
+        golden_ikura_num:
+          type: number
+          description: 金イクラ数
+        ikura_num:
+          type: number
+          description: 赤イクラ数
+        no_night_waves:
+          type: boolean
+          description: 夜WAVEを含むかどうか
+        danger_rate:
+          type: number
+          description: キケン度
+        end_time:
+          format: date-time
+          type: string
+          description: シフト終了時刻
+        play_time:
+          format: date-time
+          type: string
+          description: プレイ時刻
+        start_time:
+          format: date-time
+          type: string
+          description: シフト開始時刻
+        members:
+          example:
+            - '0000000000000000'
+            - '1111111111111111'
+            - '2222222222222222'
+            - '3333333333333333'
+          description: チームメンバー(ソート済み)
+          type: array
+          items:
+            type: string
+        job_result:
+          description: バイト結果
+          allOf:
+            - $ref: '#/components/schemas/JobResult'
+        schedule:
+          description: スケジュール
+          allOf:
+            - $ref: '#/components/schemas/Schedule'
+        players:
+          description: プレイヤーリザルト
+          type: array
+          items:
+            $ref: '#/components/schemas/Player'
+        waves:
+          description: WAVEリザルト
+          type: array
+          items:
+            $ref: '#/components/schemas/Wave'
+      required:
+        - salmon_id
+        - boss_counts
+        - boss_kill_counts
+        - golden_ikura_num
+        - ikura_num
+        - no_night_waves
+        - danger_rate
+        - end_time
+        - play_time
+        - start_time
+        - members
+        - job_result
+        - schedule
+        - players
+        - waves
     UserStats:
       type: object
       properties:
@@ -607,27 +898,6 @@ components:
             $ref: '#/components/schemas/NicknameAndIcon'
       required:
         - nickname_and_icons
-    JobResult:
-      type: object
-      properties:
-        failure_wave:
-          type: number
-          example: 1
-          nullable: true
-        failure_reason:
-          type: string
-          enum:
-            - time_limit
-            - wipe_out
-          example: time_limit
-          nullable: true
-        is_clear:
-          type: boolean
-          example: false
-      required:
-        - failure_wave
-        - failure_reason
-        - is_clear
     RestorePlayer:
       type: object
       properties:
@@ -984,36 +1254,6 @@ components:
         - special
         - weapon_list
         - special_counts
-    EnumImageType:
-      type: object
-      properties:
-        image:
-          type: object
-        name:
-          type: string
-      required:
-        - image
-        - name
-    Schedule:
-      type: object
-      properties:
-        start_time:
-          format: date-time
-          type: string
-        end_time:
-          format: date-time
-          type: string
-        stage:
-          $ref: '#/components/schemas/EnumImageType'
-        weapons:
-          type: array
-          items:
-            type: string
-      required:
-        - start_time
-        - end_time
-        - stage
-        - weapons
     WaveResult:
       type: object
       properties:

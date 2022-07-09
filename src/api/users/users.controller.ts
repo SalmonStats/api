@@ -1,14 +1,5 @@
 import { Player } from '.prisma/client';
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  ParseIntPipe,
-  Post,
-  Query,
-  ValidationPipe,
-} from '@nestjs/common';
+import { Controller, Get, Param, Query, ValidationPipe } from '@nestjs/common';
 import {
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -19,8 +10,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { PaginatedRequestDtoForUser } from '../dto/pagination.dto';
-import { UsersRequestDto } from '../dto/users.request.dto';
-import { UsersService, UserStats } from './users.service';
+import { UserStats } from '../dto/results/stage.result.dto';
+import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {
