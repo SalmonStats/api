@@ -32,7 +32,7 @@ async function bootstrap() {
     .setVersion(process.env.API_VER)
     .build();
   const documents = SwaggerModule.createDocument(app, options);
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV !== 'production') {
     const build = path.resolve(process.cwd(), 'docs');
     const output = path.resolve(build, 'index');
     mkdir(build, { recursive: true }, (_) => {});

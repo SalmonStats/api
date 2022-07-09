@@ -1,5 +1,5 @@
 import { Player, PrismaPromise } from '.prisma/client';
-import { Injectable, Res } from '@nestjs/common';
+import { Injectable, NotFoundException, Res } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose, plainToClass, Transform, Type } from 'class-transformer';
 import snakecaseKeys from 'snakecase-keys';
@@ -46,17 +46,24 @@ class StageResult {
     }
   }
 
-  @ApiProperty()
+  @ApiProperty({ description: 'ステージID' })
   stage_id: number;
-  @ApiProperty()
+
+  @ApiProperty({ description: '最高評価' })
   grade_point_max: number;
+
   @ApiProperty()
   shifts_worked: number;
+
   @ApiProperty()
   kuma_point_total: number;
+
+  @ApiProperty()
   nightless: boolean;
+
   @ApiProperty({ type: Result })
   player_results: Result;
+
   @ApiProperty({ type: Result })
   team_results?: Result;
 }
@@ -74,20 +81,28 @@ interface UserData {
 }
 
 export class UserStats {
-  constructor(results: UserData[], nicknameAndIcons: NicknameAndIcon[]) {
+  constructor(results: UserData[], nicknameAndIcons?: NicknameAndIcon) {
+    // バイト回数の合計
     this.shifts_worked = results.reduce(
       (acc, cur) => acc + cur.shifts_worked,
       0
     );
+    // 金イクラの合計
     this.golden_ikura_num = results.reduce(
       (acc, cur) => acc + cur.golden_ikura_num,
       0
     );
+    // イクラの合計
     this.ikura_num = results.reduce((acc, cur) => acc + cur.ikura_num, 0);
+    // クマサンポイントの合計
     this.kuma_point = results.reduce((acc, cur) => acc + cur.kuma_point, 0);
+    // 評価レートの最高値
     this.grade_point = Math.max(...results.map((cur) => cur.grade_point));
-    this.nickname = nicknameAndIcons[0].nickname;
-    this.thumbnail_url = nicknameAndIcons[0].thumbnail_url;
+
+    // ニックネーム
+    this.nickname = nicknameAndIcons.nickname;
+    // 画像
+    this.thumbnail_url = nicknameAndIcons.thumbnail_url;
 
     const getStageResult = (stageId: number, nightless: boolean) => {
       const result = results.find(
@@ -167,8 +182,12 @@ export class UserStats {
 }
 
 class StageResults {
+  @ApiProperty()
   stage_id: number;
+  @ApiProperty()
   night: StageResult;
+
+  @ApiProperty()
   nightless: StageResult;
 }
 
@@ -258,50 +277,25 @@ export class UsersService {
     `;
   }
 
+  // ユーザー検索
   async find(nsaid: string): Promise<UserStats> {
-    const results = await this.prisma.$transaction([this.queryBuilder(nsaid)]);
+    // 指定されたユーザーの情報を検索
+    const result = (
+      await this.prisma.$transaction([this.queryBuilder(nsaid)])
+    ).flat();
 
+    if (result.length === 0) {
+      throw new NotFoundException();
+    }
     const request: NicknameAndIconRequestDto = new NicknameAndIconRequestDto([
       nsaid,
     ]);
-    const nicknameAndIcons: NicknameAndIcon[] = (
+    const nicknameAndIcons: NicknameAndIcon = (
       await this.service.findMany(request)
-    ).nickname_and_icons;
+    ).nickname_and_icons.shift();
 
-    const response = new UserStats(results[0], nicknameAndIcons);
+    const response = new UserStats(result, nicknameAndIcons);
 
     return response;
-  }
-
-  create(request: UsersRequestDto) {
-    return this.prisma.user.upsert({
-      where: {
-        uid: request.uid,
-      },
-      create: {
-        uid: request.uid,
-        name: request.name,
-        screenName: request.screenName,
-        thumbnailURL: request.thumbnailURL,
-        accounts: {
-          connectOrCreate: {
-            where: {
-              nsaid: request.account.nsaid,
-            },
-            create: {
-              nsaid: request.account.nsaid,
-              nickname: request.account.nickname,
-              friendCode: request.account.friendCode,
-              thumbnailURL: request.thumbnailURL,
-            },
-          },
-        },
-      },
-      update: {
-        name: request.name,
-        screenName: request.screenName,
-        thumbnailURL: request.thumbnailURL,
-      },
-    });
   }
 }

@@ -55,23 +55,6 @@ paths:
           description: ''
       tags:
         - ユーザー
-    post:
-      operationId: 登録
-      summary: ''
-      parameters: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UsersRequestDto'
-      responses:
-        '200':
-          description: ''
-        '404':
-          description: ''
-      tags:
-        - ユーザー
   /v1/stats/{start_time}:
     get:
       operationId: 統計取得
@@ -225,6 +208,8 @@ paths:
           schema:
             type: integer
       responses:
+        '200':
+          description: ''
         '404':
           description: ''
       tags:
@@ -280,7 +265,7 @@ paths:
           schema:
             title: ''
             type: boolean
-        - name: nightLess
+        - name: night_less
           required: false
           in: query
           description: 夜イベントを含まないかどうか
@@ -326,6 +311,8 @@ paths:
               - desc
             type: string
       responses:
+        '200':
+          description: ''
         '404':
           description: ''
       tags:
@@ -341,7 +328,9 @@ paths:
             schema:
               $ref: '#/components/schemas/UploadResults'
       responses:
-        '404':
+        '201':
+          description: ''
+        '400':
           description: ''
       tags:
         - リザルト
@@ -505,7 +494,7 @@ paths:
 info:
   title: Salmon Stats API Documents
   description: ''
-  version: 1.0.3.8
+  version: 1.0.6
   contact: {}
 tags: []
 servers: []
@@ -519,12 +508,16 @@ components:
       properties:
         stage_id:
           type: number
+          description: ステージID
         grade_point_max:
           type: number
+          description: 最高評価
         shifts_worked:
           type: number
         kuma_point_total:
           type: number
+        nightless:
+          type: boolean
         player_results:
           $ref: '#/components/schemas/Result'
         team_results:
@@ -534,6 +527,7 @@ components:
         - grade_point_max
         - shifts_worked
         - kuma_point_total
+        - nightless
         - player_results
         - team_results
     UserStats:
@@ -583,50 +577,6 @@ components:
         - grade_point
         - stage_results
         - results
-    Account:
-      type: object
-      properties:
-        nsaid:
-          type: string
-          default: '0000000000000000'
-        nickname:
-          type: string
-          default: すたーらいとえむいー
-        thumbnailURL:
-          type: string
-          default: >-
-            https://cdn-image-e0d67c509fb203858ebcb2fe3f88c2aa.baas.nintendo.com/1/b007cfc98eed87c2
-        friendCode:
-          type: string
-          default: 0000-0000-0000
-      required:
-        - nsaid
-        - nickname
-        - thumbnailURL
-        - friendCode
-    UsersRequestDto:
-      type: object
-      properties:
-        uid:
-          type: string
-          default: '0000000000000000'
-        account:
-          $ref: '#/components/schemas/Account'
-        name:
-          type: string
-          default: みなかみはちみ
-        screenName:
-          type: string
-          default: tkgling
-        thumbnailURL:
-          type: string
-          default: >-
-            https://pbs.twimg.com/profile_images/1544579876275245057/km4scupk_400x400.jpg
-      required:
-        - uid
-        - account
-        - name
-        - screenName
     NicknameAndIcon:
       type: object
       properties:
@@ -655,12 +605,14 @@ components:
         failure_wave:
           type: number
           example: 1
+          nullable: true
         failure_reason:
           type: string
           enum:
             - time_limit
             - wipe_out
           example: time_limit
+          nullable: true
         is_clear:
           type: boolean
           example: false
@@ -689,22 +641,29 @@ components:
           type: number
         job_id:
           type: number
+          nullable: true
         job_score:
           type: number
+          nullable: true
         job_rate:
           type: number
+          nullable: true
         kuma_point:
           type: number
+          nullable: true
         style:
           type: string
         species:
           type: string
         grade_id:
           type: number
+          nullable: true
         grade_point:
           type: number
+          nullable: true
         grade_point_delta:
           type: number
+          nullable: true
         special_id:
           type: number
         special_counts:
@@ -750,6 +709,9 @@ components:
           type: array
           items:
             type: string
+        rare_weapon:
+          type: number
+          nullable: true
       required:
         - stage_id
         - start_time

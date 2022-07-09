@@ -4,6 +4,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   ParseIntPipe,
   Post,
@@ -13,8 +14,11 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import {
+  ApiBadRequestResponse,
+  ApiCreatedResponse,
   ApiExtraModels,
   ApiNotFoundResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiTags,
@@ -25,7 +29,7 @@ import {
 } from '../dto/pagination.dto';
 import { UploadResults as UploadedResultsModel } from '../dto/result.request.dto';
 import { ResultsService } from './results.service';
-import { UploadStatus, UploadStatuses } from './results.status';
+import { Status, UploadStatus, UploadStatuses } from './results.status';
 import { Result } from '../dto/result.response.dto';
 
 @Controller('results')
@@ -38,6 +42,7 @@ export class ResultsController {
   @ApiTags('リザルト')
   @ApiOperation({ operationId: '取得' })
   @ApiNotFoundResponse()
+  @ApiOkResponse()
   find(@Param('salmon_id', ParseIntPipe) salmon_id: number): Promise<Result> {
     return this.service.find(salmon_id);
   }
@@ -45,6 +50,7 @@ export class ResultsController {
   @Get('')
   @ApiTags('リザルト')
   @ApiOperation({ operationId: '一括取得' })
+  @ApiOkResponse()
   @ApiNotFoundResponse()
   findMany(
     @Query(new ValidationPipe({ transform: true }))
@@ -54,9 +60,11 @@ export class ResultsController {
   }
 
   @Post('')
+  @HttpCode(200)
   @ApiTags('リザルト')
   @ApiOperation({ operationId: '登録' })
-  @ApiNotFoundResponse()
+  @ApiCreatedResponse()
+  @ApiBadRequestResponse()
   create(
     @Body(new ValidationPipe({ transform: true }))
     request: UploadedResultsModel

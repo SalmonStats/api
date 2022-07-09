@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   ArrayMaxSize,
@@ -23,11 +23,15 @@ class JobResult {
   @IsInt()
   @Max(3)
   @Min(1)
-  @ApiProperty({ example: 1 })
+  @ApiProperty({ example: 1, nullable: true })
   failure_wave: number;
 
   @IsOptional()
-  @ApiProperty({ enum: FailureReason, example: FailureReason.TIMELIMIT })
+  @ApiProperty({
+    enum: FailureReason,
+    example: FailureReason.TIMELIMIT,
+    nullable: true,
+  })
   failure_reason: FailureReason;
 
   @IsBoolean()
@@ -51,6 +55,10 @@ export class RestoreSchedule {
   @ApiProperty()
   @IsArray()
   weapon_list: number[];
+
+  @ApiPropertyOptional({ nullable: true })
+  @IsArray()
+  rare_weapon: number;
 }
 
 export class RestoreWave {
@@ -108,22 +116,22 @@ export class RestorePlayer {
   @IsInt()
   ikura_num: number;
 
-  @ApiProperty()
+  @ApiProperty({ nullable: true })
   @IsOptional()
   @IsInt()
   job_id: number;
 
-  @ApiProperty()
+  @ApiProperty({ nullable: true })
   @IsOptional()
   @IsInt()
   job_score: number;
 
-  @ApiProperty()
+  @ApiProperty({ nullable: true })
   @IsOptional()
   @IsInt()
   job_rate: number;
 
-  @ApiProperty()
+  @ApiProperty({ nullable: true })
   @IsOptional()
   @IsInt()
   kuma_point: number;
@@ -134,17 +142,17 @@ export class RestorePlayer {
   @ApiProperty()
   species: string;
 
-  @ApiProperty()
+  @ApiProperty({ nullable: true })
   @IsOptional()
   @IsInt()
   grade_id: number;
 
-  @ApiProperty()
+  @ApiProperty({ nullable: true })
   @IsOptional()
   @IsInt()
   grade_point: number;
 
-  @ApiProperty()
+  @ApiProperty({ nullable: true })
   @IsOptional()
   @IsInt()
   grade_point_delta: number;

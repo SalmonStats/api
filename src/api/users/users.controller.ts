@@ -1,4 +1,4 @@
-import { Player, User as UserModel } from '.prisma/client';
+import { Player } from '.prisma/client';
 import {
   Body,
   Controller,
@@ -46,17 +46,5 @@ export class UsersController {
   @ApiParam({ name: 'nsaid', example: '91d160aa84e88da6' })
   find(@Param('nsaid') nsaid: string): Promise<UserStats> {
     return this.service.find(nsaid);
-  }
-
-  @Post(':nsaid')
-  @ApiTags('ユーザー')
-  @ApiOperation({ operationId: '登録' })
-  @ApiOkResponse({})
-  @ApiNotFoundResponse()
-  create(
-    @Body(new ValidationPipe({ transform: true }))
-    request: UsersRequestDto
-  ) {
-    this.service.create(request);
   }
 }
