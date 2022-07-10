@@ -114,6 +114,10 @@ export class ResultsService {
         return {
           salmonId: request.order,
         };
+      default:
+        return {
+          salmonId: 'desc',
+        };
     }
   }
 
@@ -128,8 +132,8 @@ export class ResultsService {
       where: this.where(request),
       include: {
         players: request.include_details,
-        waves: request.include_details,
-        jobResult: request.include_details,
+        waves: true,
+        jobResult: true,
         schedule: request.include_details,
       },
       orderBy: this.order(request),
