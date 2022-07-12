@@ -9,7 +9,7 @@ import { NicknameAndIconRequestDto } from './nickname_and_icon.request';
 import { NicknameAndIconResponseDto } from './nickname_and_icon.response';
 import { NicknameAndIconService } from './nickname_and_icon.service';
 
-@ApiTags('ユーザー')
+@ApiTags('プレイヤー')
 @Controller('nickname_and_icon')
 export class NicknameAndIconController {
   constructor(private readonly service: NicknameAndIconService) {}

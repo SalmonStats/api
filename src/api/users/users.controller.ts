@@ -1,50 +1,51 @@
-import { Player } from '.prisma/client';
-import { Controller, Get, Param, Query, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
 import {
-  ApiNotFoundResponse,
+  ApiBadRequestResponse,
+  ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
-  ApiQuery,
-  ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { PaginatedRequestDtoForUser } from '../dto/pagination.dto';
-import { UserStats } from '../dto/results/stage.result.dto';
+import { UserCreateInputDto } from '../dto/users.response';
 import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly service: UsersService) {}
 
-  @Get('')
+  @Get(':uid')
   @ApiTags('ユーザー')
-  @ApiOperation({ operationId: '一覧検索' })
-  @ApiOkResponse()
-  @ApiQuery({
-    name: 'nickname',
-    type: String,
-    example: 'みなかみはちみ',
-    description: 'ニックネーム',
+  @ApiOperation({ operationId: 'ユーザー取得' })
+  @ApiOkResponse({ type: UserCreateInputDto })
+  @ApiBadRequestResponse()
+  @ApiParam({
+    name: 'uid',
+    type: 'string',
+    required: true,
+    example: 'u0ucwsTlP6b2EJNAOZWLKSMbybd2',
   })
-  findMany(
-    @Query(new ValidationPipe({ transform: true }))
-    query: PaginatedRequestDtoForUser
-  ): Promise<Partial<Player>[]> {
-    return this.service.findMany(query);
+  find(@Param() uid: string) {}
+
+  @Post()
+  @ApiTags('ユーザー')
+  @ApiOperation({ operationId: 'ユーザー追加' })
+  @ApiCreatedResponse({ type: UserCreateInputDto })
+  @ApiBadRequestResponse()
+  create(@Body() request: UserCreateInputDto) {
+    return this.service.create(request);
   }
 
-  @Get(':nsaid')
+  @Put(':uid')
   @ApiTags('ユーザー')
-  @ApiOperation({ operationId: '検索' })
-  @ApiOkResponse({ type: UserStats })
-  @ApiNotFoundResponse()
+  @ApiOperation({ operationId: 'ユーザー更新' })
+  @ApiCreatedResponse({ type: UserCreateInputDto })
+  @ApiBadRequestResponse()
   @ApiParam({
-    name: 'nsaid',
-    example: '91d160aa84e88da6',
-    description: 'ユーザーID',
+    name: 'uid',
+    type: 'string',
+    required: true,
+    example: 'u0ucwsTlP6b2EJNAOZWLKSMbybd2',
   })
-  find(@Param('nsaid') nsaid: string): Promise<UserStats> {
-    return this.service.find(nsaid);
-  }
+  update() {}
 }

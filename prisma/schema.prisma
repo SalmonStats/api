@@ -104,14 +104,16 @@ model Wave {
 }
 
 model User {
-  id           Int       @id @default(autoincrement())
-  uid          String    @unique // Twitter ID
-  name         String // Twitter name
-  screenName   String    @map("screen_name") // Twitter screen name
-  thumbnailURL String?   @map("thumbnail_url") // 表示される画像
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt()
-  accounts     Account[]
+  id                 Int       @id @default(autoincrement())
+  uid                String    @unique // Twitter ID
+  name               String // Twitter name
+  screenName         String    @map("screen_name") // Twitter screen name
+  thumbnailURL       String?   @map("thumbnail_url") // 表示される画像
+  isVerified         Boolean   @map("is_verified") // 認証済みか
+  isImperialScholars Boolean   @map("is_imperial_scholars") // 特待生かどうか
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt()
+  accounts           Account[]
 
   @@map("users")
 }

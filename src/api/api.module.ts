@@ -34,6 +34,9 @@ import { RestoreModule } from './restore/restore.module';
 import { SystemModule } from './system/system.module';
 import { SystemController } from './system/system.controller';
 import { SystemService } from './system/system.service';
+import { PlayersController } from './players/players.controller';
+import { PlayersModule } from './players/players.module';
+import { PlayersService } from './players/players.service';
 
 @Module({
   controllers: [
@@ -47,6 +50,7 @@ import { SystemService } from './system/system.service';
     SalmonidsController,
     RestoreController,
     SystemController,
+    PlayersController,
   ],
   providers: [
     ApiService,
@@ -61,6 +65,7 @@ import { SystemService } from './system/system.service';
     SalmonidsService,
     RestoreService,
     SystemService,
+    PlayersService,
   ],
   imports: [
     ResultsModule,
@@ -76,6 +81,7 @@ import { SystemService } from './system/system.service';
     SalmonidsModule,
     RestoreModule,
     SystemModule,
+    PlayersModule,
   ],
 })
 export class ApiModule {}

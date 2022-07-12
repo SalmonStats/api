@@ -25,6 +25,6 @@ db:
 	docker run --rm \
 	-p 5432:5432 \
 	-e POSTGRES_USER=linpostgres \
-	-e POSTGRES_PASSWORD=Ssf8HA3K8ba \
+	-e POSTGRES_PASSWORD=1234567890 \
 	-e POSTGRES_DB=splatoon2 \
 	postgres:14.2
