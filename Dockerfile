@@ -5,5 +5,4 @@ RUN yarn install
 RUN yarn prisma generate
 COPY . .
 COPY tsconfig.json ./
-COPY ./prisma ./
 CMD ["yarn", "start:prod"]
