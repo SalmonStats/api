@@ -110,8 +110,10 @@ model User {
   name               String // Twitter name
   screenName         String    @map("screen_name") // Twitter screen name
   thumbnailURL       String?   @map("thumbnail_url") // 表示される画像
-  isVerified         Boolean   @map("is_verified") // 認証済みか
-  isImperialScholars Boolean   @map("is_imperial_scholars") // 特待生かどうか
+  isVerified         Boolean   @default(false) @map("is_verified") // 認証済みか
+  isImperialScholars Boolean   @default(false) @map("is_imperial_scholars") // 特待生かどうか
+  isFriendCodePublic Boolean   @default(false) @map("is_friend_code_public") // フレンドコード公開フラグ
+  isTwitterIdPublic  Boolean   @default(false) @map("is_twitter_id_public") // TwitterID公開フラグ
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt()
   accounts           Account[]
