@@ -33,6 +33,7 @@ export class UsersController {
   @ApiCreatedResponse({ type: UserCreateInputDto })
   @ApiBadRequestResponse()
   create(@Body() request: UserCreateInputDto) {
+    console.log(request);
     return this.service.create(request);
   }
 

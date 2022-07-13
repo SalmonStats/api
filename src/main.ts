@@ -7,6 +7,8 @@ import { mkdir, writeFileSync } from 'fs';
 import { dump } from 'js-yaml';
 import { exec } from 'child_process';
 import * as bodyParser from 'body-parser';
+import { config } from 'dotenv';
+config({ path: '.env.sandbox' });
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

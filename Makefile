@@ -2,7 +2,7 @@ include .env.development
 
 .PHONY: serve
 serve:
-	yarn start:dev
+	yarn start:local
 
 .PHONY: up
 up:
@@ -23,3 +23,11 @@ build:
 .PHONY: push
 push:
 	docker push tkgling/salmon-stats-app:${API_VER}
+
+.PHONY: db
+db:
+	docker run -d --name salmon_stats_db_dev -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} -e POSTGRES_USER=${POSTGRES_USER} -e POSTGRES_DB=${POSTGRES_DB} -p 5432:5432 postgres:14.4
+
+.PHONY: db-down
+db-down:
+	docker stop salmon_stats_db_dev
