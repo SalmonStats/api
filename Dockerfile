@@ -8,4 +8,3 @@ RUN yarn install
 RUN yarn prisma generate
 RUN yarn build
 COPY . .
-CMD ["yarn", "start:prod"]
