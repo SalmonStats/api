@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsString, ValidateNested } from 'class-validator';
 
-class Account {
+export class AccountCreateInputDto {
   @ApiProperty({ description: 'ユーザーID', example: '91d160aa84e88da6' })
   @IsString()
   nsaid: string;
@@ -18,6 +18,31 @@ class Account {
   })
   @IsString()
   thumbnailURL: string;
+
+  @ApiProperty({
+    description: 'フレンドコード',
+    example: '0123-4567-8910',
+  })
+  @IsString()
+  friendCode: string;
+}
+
+export class UserConnectInputDto {
+  @ApiProperty({
+    description: 'Twitter固有ID',
+    example: 'u0ucwsTlP6b2EJNAOZWLKSMbybd2',
+  })
+  @IsString()
+  uid: string;
+
+  @ApiProperty({
+    type: [AccountCreateInputDto],
+    description: 'ニンテンドースイッチアカウント',
+  })
+  @ValidateNested({ each: true })
+  @IsArray()
+  @Type(() => AccountCreateInputDto)
+  accounts: AccountCreateInputDto[];
 }
 
 export class UserCreateInputDto {
@@ -48,11 +73,11 @@ export class UserCreateInputDto {
   uid: string;
 
   @ApiProperty({
-    type: [Account],
+    type: [AccountCreateInputDto],
     description: 'ニンテンドースイッチアカウント',
   })
   @ValidateNested({ each: true })
   @IsArray()
-  @Type(() => Account)
-  accounts: Account[];
+  @Type(() => AccountCreateInputDto)
+  accounts: AccountCreateInputDto[];
 }

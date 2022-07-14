@@ -7,6 +7,7 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import { User } from '@prisma/client';
 import { UserCreateInputDto } from '../dto/users.response';
 import { UsersService } from './users.service';
 
@@ -32,7 +33,7 @@ export class UsersController {
   @ApiOperation({ operationId: 'ユーザー追加' })
   @ApiCreatedResponse({ type: UserCreateInputDto })
   @ApiBadRequestResponse()
-  create(@Body() request: UserCreateInputDto) {
+  create(@Body() request: UserCreateInputDto): Promise<User> {
     console.log(request);
     return this.service.create(request);
   }
@@ -48,5 +49,7 @@ export class UsersController {
     required: true,
     example: 'u0ucwsTlP6b2EJNAOZWLKSMbybd2',
   })
-  update() {}
+  update(request: UserCreateInputDto): Promise<User> {
+    return this.service.update(request);
+  }
 }
