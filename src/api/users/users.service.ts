@@ -38,6 +38,9 @@ export class UsersService {
       where: {
         uid: request.uid,
       },
+      include: {
+        accounts: true,
+      },
       create: {
         uid: request.uid,
         name: request.display_name,

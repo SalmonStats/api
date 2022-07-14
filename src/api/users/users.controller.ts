@@ -34,7 +34,6 @@ export class UsersController {
   @ApiCreatedResponse({ type: UserCreateInputDto })
   @ApiBadRequestResponse()
   create(@Body() request: UserCreateInputDto): Promise<User> {
-    console.log(request);
     return this.service.create(request);
   }
 
