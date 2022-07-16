@@ -22,7 +22,7 @@ export class UsersService {
             },
             create: {
               nsaid: account.nsaid,
-              nickname: account.name,
+              nickname: account.nickname,
               thumbnailURL: account.thumbnailURL,
               friendCode: account.friendCode,
             },
@@ -53,7 +53,7 @@ export class UsersService {
             },
             create: {
               nsaid: account.nsaid,
-              nickname: account.name,
+              nickname: account.nickname,
               thumbnailURL: account.thumbnailURL,
               friendCode: account.friendCode,
             },
@@ -71,7 +71,7 @@ export class UsersService {
             },
             create: {
               nsaid: account.nsaid,
-              nickname: account.name,
+              nickname: account.nickname,
               thumbnailURL: account.thumbnailURL,
               friendCode: account.friendCode,
             },

@@ -9,7 +9,7 @@ export class AccountCreateInputDto {
 
   @ApiProperty({ description: 'ユーザー名', example: 'みなかみはちみ' })
   @IsString()
-  name: string;
+  nickname: string;
 
   @ApiProperty({
     description: 'ユーザーアカウント画像',
