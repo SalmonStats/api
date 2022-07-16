@@ -115,7 +115,7 @@ model User {
   isFriendCodePublic Boolean   @default(false) @map("is_friend_code_public") // フレンドコード公開フラグ
   isTwitterIdPublic  Boolean   @default(false) @map("is_twitter_id_public") // TwitterID公開フラグ
   expiresIn          DateTime  @default(now()) @map("expires_in") // 有効期限
-  accessToken        String    @map("access_token") // アクセストークン
+  accessToken        String    @unique @map("access_token") // アクセストークン
   createdAt          DateTime  @default(now()) @map("created_at") // 作成日時
   updatedAt          DateTime  @updatedAt() @map("updated_at") // 更新日時
   accounts           Account[]
