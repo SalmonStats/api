@@ -45,7 +45,7 @@ export class UsersService {
         uid: request.uid,
         name: request.display_name,
         screenName: request.screen_name,
-        thumbnailURL: request.photoURL,
+        thumbnailURL: request.thumbnail_url,
         accounts: {
           connectOrCreate: request.accounts.map((account) => ({
             where: {
@@ -63,7 +63,7 @@ export class UsersService {
       update: {
         name: request.display_name,
         screenName: request.screen_name,
-        thumbnailURL: request.photoURL,
+        thumbnailURL: request.thumbnail_url,
         accounts: {
           connectOrCreate: request.accounts.map((account) => ({
             where: {
