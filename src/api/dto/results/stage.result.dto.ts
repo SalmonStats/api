@@ -1,6 +1,7 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { NicknameAndIcon } from 'src/api/nickname_and_icon/nickname_and_icon.response';
+import { UserRole } from 'src/api/users/users.service';
 import { Result as CoopResult } from '../result.response.dto';
 
 class IkuraResult {
@@ -76,30 +77,39 @@ export class StageResult {
 }
 
 export class UserStats {
-  constructor(results: UserData[], nicknameAndIcons?: NicknameAndIcon) {
+  constructor(
+    results: UserData[],
+    user: UserRole,
+    nicknameAndIcons?: NicknameAndIcon
+  ) {
+    // ユーザーID
+    this.nsaid = user.nsaid;
+    // ニックネーム
+    this.nickname = nicknameAndIcons.nickname;
+    // 画像
+    this.thumbnail_url = nicknameAndIcons.thumbnail_url;
     // バイト回数の合計
     this.shifts_worked = results.reduce(
       (acc, cur) => acc + cur.shifts_worked,
       0
     );
+    this.is_clear = user.is_clear;
+    this.is_failure = user.is_failure;
+    this.is_imperial_scholars = user.is_imperial_scholars;
+    this.is_verified = user.is_verified;
+    this.is_friend_code_public = user.is_friend_code_public;
+    this.is_twitter_id_public = user.is_twitter_id_public;
     // 金イクラの合計
     this.golden_ikura_num = results.reduce(
       (acc, cur) => acc + cur.golden_ikura_num,
       0
     );
-    // ユーザーID
-    this.nsaid = nicknameAndIcons.nsa_id;
     // イクラの合計
     this.ikura_num = results.reduce((acc, cur) => acc + cur.ikura_num, 0);
     // クマサンポイントの合計
     this.kuma_point = results.reduce((acc, cur) => acc + cur.kuma_point, 0);
     // 評価レートの最高値
     this.grade_point = Math.max(...results.map((cur) => cur.grade_point));
-
-    // ニックネーム
-    this.nickname = nicknameAndIcons.nickname;
-    // 画像
-    this.thumbnail_url = nicknameAndIcons.thumbnail_url;
 
     const getStageResult = (stageId: number, nightless: boolean) => {
       const result = results.find(
@@ -144,10 +154,28 @@ export class UserStats {
   nickname: string;
 
   @ApiProperty()
+  is_verified: boolean;
+
+  @ApiProperty()
+  is_imperial_scholars: boolean;
+
+  @ApiProperty()
+  is_friend_code_public: boolean;
+
+  @ApiProperty()
+  is_twitter_id_public: boolean;
+
+  @ApiProperty()
   thumbnail_url: string;
 
   @ApiProperty()
   shifts_worked: number;
+
+  @ApiProperty()
+  is_clear: number;
+
+  @ApiProperty()
+  is_failure: number;
 
   @ApiProperty()
   golden_ikura_num: number;
@@ -182,6 +210,7 @@ export class UserStats {
 class StageResults {
   @ApiProperty()
   stage_id: number;
+
   @ApiProperty()
   night: StageResult;
 

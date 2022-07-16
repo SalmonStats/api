@@ -17,14 +17,14 @@ export class AccountCreateInputDto {
       'https://cdn-image-e0d67c509fb203858ebcb2fe3f88c2aa.baas.nintendo.com/1/d246b279e0125831',
   })
   @IsString()
-  thumbnailURL: string;
+  thumbnail_url: string;
 
   @ApiProperty({
     description: 'フレンドコード',
     example: '0123-4567-8910',
   })
   @IsString()
-  friendCode: string;
+  friend_code: string;
 }
 
 export class UserConnectInputDto {

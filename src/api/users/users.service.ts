@@ -4,6 +4,17 @@ import { PrismaService } from 'src/prisma.service';
 import { UserCreateInputDto } from '../dto/users.response';
 import crypto from 'crypto';
 
+export interface UserRole {
+  nsaid: string;
+  is_clear: number;
+  is_failure: number;
+  job_id: number;
+  is_imperial_scholars: boolean;
+  is_verified: boolean;
+  is_friend_code_public: boolean;
+  is_twitter_id_public: boolean;
+}
+
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
@@ -24,8 +35,8 @@ export class UsersService {
             create: {
               nsaid: account.nsaid,
               nickname: account.nickname,
-              thumbnailURL: account.thumbnailURL,
-              friendCode: account.friendCode,
+              thumbnailURL: account.thumbnail_url,
+              friendCode: account.friend_code,
             },
           })),
         },
@@ -59,8 +70,8 @@ export class UsersService {
             create: {
               nsaid: account.nsaid,
               nickname: account.nickname,
-              thumbnailURL: account.thumbnailURL,
-              friendCode: account.friendCode,
+              thumbnailURL: account.thumbnail_url,
+              friendCode: account.friend_code,
             },
           })),
         },
@@ -77,8 +88,8 @@ export class UsersService {
             create: {
               nsaid: account.nsaid,
               nickname: account.nickname,
-              thumbnailURL: account.thumbnailURL,
-              friendCode: account.friendCode,
+              thumbnailURL: account.thumbnail_url,
+              friendCode: account.friend_code,
             },
           })),
         },
