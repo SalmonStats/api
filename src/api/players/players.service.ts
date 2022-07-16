@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Player, PrismaPromise } from '@prisma/client';
+import { Player, Prisma, PrismaPromise } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
 import { PaginatedRequestDtoForUser } from '../dto/pagination.dto';
 import { UserData, UserStats } from '../dto/results/stage.result.dto';
@@ -42,6 +42,9 @@ export class PlayersService {
     });
   }
 
+  private queryBuidlerUser(nsaid: string): PrismaPromise<any> {
+    return this.prisma.$queryRaw<any>``;
+  }
   private queryBuilder(nsaid: string): PrismaPromise<UserData[]> {
     return this.prisma.$queryRaw<UserData[]>`
     WITH results AS (

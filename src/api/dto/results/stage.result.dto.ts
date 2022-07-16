@@ -87,6 +87,8 @@ export class UserStats {
       (acc, cur) => acc + cur.golden_ikura_num,
       0
     );
+    // ユーザーID
+    this.nsaid = nicknameAndIcons.nsa_id;
     // イクラの合計
     this.ikura_num = results.reduce((acc, cur) => acc + cur.ikura_num, 0);
     // クマサンポイントの合計

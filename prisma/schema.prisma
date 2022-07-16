@@ -114,19 +114,23 @@ model User {
   isImperialScholars Boolean   @default(false) @map("is_imperial_scholars") // 特待生かどうか
   isFriendCodePublic Boolean   @default(false) @map("is_friend_code_public") // フレンドコード公開フラグ
   isTwitterIdPublic  Boolean   @default(false) @map("is_twitter_id_public") // TwitterID公開フラグ
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt()
+  expiresIn          DateTime  @default(now()) @map("expires_in") // 有効期限
+  accessToken        String    @map("access_token") // アクセストークン
+  createdAt          DateTime  @default(now()) @map("created_at") // 作成日時
+  updatedAt          DateTime  @updatedAt() @map("updated_at") // 更新日時
   accounts           Account[]
 
   @@map("users")
 }
 
 model Account {
-  id           Int     @id @default(autoincrement())
-  nsaid        String  @unique
-  nickname     String  @map("nickname")
-  friendCode   String  @unique
-  thumbnailURL String? @map("thumbnail_url")
+  id           Int      @id @default(autoincrement())
+  nsaid        String   @unique
+  nickname     String   @map("nickname")
+  friendCode   String   @unique @map("friend_code")
+  thumbnailURL String?  @map("thumbnail_url") // 画像
+  createdAt    DateTime @default(now()) @map("created_at") // 作成日時
+  updatedAt    DateTime @updatedAt() @map("updated_at") // 更新日時
 
   User   User? @relation(fields: [userId], references: [id])
   userId Int?

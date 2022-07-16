@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
 import { UserCreateInputDto } from '../dto/users.response';
+import crypto from 'crypto';
 
 @Injectable()
 export class UsersService {
@@ -46,6 +47,10 @@ export class UsersService {
         name: request.display_name,
         screenName: request.screen_name,
         thumbnailURL: request.thumbnail_url,
+        accessToken: crypto
+          .createHash('sha256')
+          .update(request.uid)
+          .digest('hex'),
         accounts: {
           connectOrCreate: request.accounts.map((account) => ({
             where: {
