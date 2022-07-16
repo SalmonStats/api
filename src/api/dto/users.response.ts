@@ -63,7 +63,7 @@ export class UserCreateInputDto {
       'https://pbs.twimg.com/profile_images/1544579876275245057/km4scupk_normal.jpg',
   })
   @IsString()
-  photoURL: string;
+  thumbnail_url: string;
 
   @ApiProperty({
     description: 'Twitter固有ID',
